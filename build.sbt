@@ -1,114 +1,120 @@
 import sbt.Keys._
 
-name := "hiStream"
+name := "breakout"
 
 
-val scalaV = "2.11.8"
-val scalaXmlV = "1.0.4"
-val akkaV = "2.4.9"
-val hikariCpV = "2.4.3"
-val slickV = "3.1.1"
-val logbackV = "1.1.3"
-val nscalaTimeV = "2.10.0"
-val codecV = "1.9"
-val sprayV = "1.3.3"
-val playComponentV = "2.5.4"
-val postgresJdbcV = "9.4.1208"
-val playJsonForAkkaHttp = "1.7.0"
+val scalaV = "2.12.6"
+val projectName = "breakout"
+val projectVersion = "2019.01.31"
+val projectMainClass = "com.neo.sk.breakout.Boot"
 
+def commonSettings = Seq(
+  version := projectVersion,
+  scalaVersion := scalaV,
+  scalacOptions ++= Seq(
+    //"-deprecation",
+    "-feature"
+  )
+)
 
-val scalaJsDomV = "0.9.0"
-val scalaJsjqueryV = "0.9.0"
-val upickleV = "0.4.2"
+import sbtcrossproject.{crossProject, CrossType}
 
 lazy val root = (project in file("."))
   .aggregate(frontend, backend)
+  .settings(name := projectName)
+
 
 
 // Scala-Js frontend
 lazy val frontend = (project in file("frontend"))
   .enablePlugins(ScalaJSPlugin)
-  .settings(name := "hiStream_Frontend")
+  .settings(name := "frontend")
   .settings(commonSettings: _*)
+  .settings(
+    inConfig(Compile)(
+      Seq(
+        fullOptJS,
+        fastOptJS,
+        packageJSDependencies,
+        packageMinifiedJSDependencies
+      ).map(f => (crossTarget in f) ~= (_ / "sjsout"))
+    ))
   .settings(skip in packageJSDependencies := false )
   .settings(
-    persistLauncher in Compile := true,
-    persistLauncher in Test := false,
-    testFrameworks += new TestFramework("utest.runner.Framework"),
+    scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % scalaJsDomV,
-      "be.doeraene" %%% "scalajs-jquery" % scalaJsjqueryV,
-      "com.lihaoyi" %%% "upickle" % upickleV,
-      "com.lihaoyi" %%% "utest" % "0.3.0" % "test"
+      "io.circe" %%% "circe-core" % "0.8.0",
+      "io.circe" %%% "circe-generic" % "0.8.0",
+      "io.circe" %%% "circe-parser" % "0.8.0",
+      "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+      "io.suzaku" %%% "diode" % "1.1.2",
+      "in.nvilla" %%% "monadic-html" % "0.4.0-RC1",
+      //"com.lihaoyi" %%% "upickle" % "0.6.6",
+      "com.lihaoyi" %%% "scalatags" % "0.6.5",
+      "org.scala-lang.modules" %% "scala-swing" % "2.0.1",
+      "org.seekloud" %%% "byteobject" % "0.1.1",
+      "org.seekloud" %% "essf" % "0.0.1-beta3"
+      //"org.scala-js" %%% "scalajs-java-time" % scalaJsJavaTime
+      //"com.lihaoyi" %%% "utest" % "0.3.0" % "test"
     )
   )
   .dependsOn(sharedJs)
 
-
-
-val projectMainClass = "com.neo.sk.hiStream.Boot"
-
 // Akka Http based backend
 lazy val backend = (project in file("backend"))
+  .enablePlugins(PackPlugin)
+  .settings(commonSettings: _*)
   .settings(
-    Revolver.settings.settings,
-    mainClass in Revolver.reStart := Some(projectMainClass)
-  ).settings(name := "hiStream_Backend")
+    mainClass in reStart := Some(projectMainClass),
+    javaOptions in reStart += "-Xmx2g"
+  )
+  .settings(name := "backend")
   .settings(
     //pack
     // If you need to specify main classes manually, use packSettings and packMain
-    packSettings,
-
+    //packSettings,
     // [Optional] Creating `hello` command that calls org.mydomain.Hello#main(Array[String])
-    packMain := Map("hiStream" -> projectMainClass),
-    packJvmOpts := Map("hiStream" -> Seq("-Xmx256m", "-Xms64m")),
-    packExtraClasspath := Map("hiStream" -> Seq("."))
+    packMain := Map("gypsy" -> projectMainClass),
+    packJvmOpts := Map("gypsy" -> Seq("-Xmx64m", "-Xms32m")),
+    packExtraClasspath := Map("gypsy" -> Seq("."))
   )
-  .settings(commonSettings: _*)
   .settings(
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaV,
-      "org.scala-lang.modules" % "scala-xml_2.11" % scalaXmlV,
-      "com.typesafe.akka" %% "akka-actor" % akkaV withSources() withSources(),
-      "com.typesafe.akka" %% "akka-slf4j" % akkaV,
-      "com.typesafe.akka" %% "akka-stream" % akkaV,
-      "com.typesafe.akka" %% "akka-http-core" % akkaV withSources(),
-      "com.typesafe.akka" %% "akka-http-experimental" % akkaV withSources(),
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaV,
-      "de.heikoseeberger" %% "akka-http-play-json" % playJsonForAkkaHttp,
-      "io.spray" %% "spray-caching" % sprayV withSources(),
-      "com.typesafe.slick" %% "slick" % slickV withSources(),
-      "com.typesafe.slick" %% "slick-codegen" % slickV,
-      "com.typesafe.play" %% "play-ws" % playComponentV,
-      "com.typesafe.play" %% "play-json" % playComponentV,
-      "com.zaxxer" % "HikariCP" % hikariCpV,
-      "ch.qos.logback" % "logback-classic" % logbackV withSources(),
-      "com.github.nscala-time" %% "nscala-time" % nscalaTimeV,
-      "commons-codec" % "commons-codec" % codecV,
-      "com.lihaoyi" %% "upickle" % upickleV,
-      "org.postgresql" % "postgresql" % postgresJdbcV
-    ),
-    (resourceGenerators in Compile) <+=
-    (fastOptJS in Compile in frontend, packageScalaJSLauncher in Compile in frontend)
-      .map { (f1, f2) => Seq(f1.data, f2.data) },
-    watchSources <++= (watchSources in frontend)
+    libraryDependencies ++= Dependencies.backendDependencies ++ Dependencies.grpcSeq
+    //libraryDependencies ++= Dependencies.backendDependencies
+  )
+  .settings {
+  (resourceGenerators in Compile) += Def.task {
+    val fastJsOut = (fastOptJS in Compile in frontend).value.data
+    val fastJsSourceMap = fastJsOut.getParentFile / (fastJsOut.getName + ".map")
+    Seq(
+      fastJsOut,
+      fastJsSourceMap
+    )
+  }.taskValue
+}
+  .settings((resourceGenerators in Compile) += Def.task {
+  Seq(
+    (packageJSDependencies in Compile in frontend).value
+    //(packageMinifiedJSDependencies in Compile in frontend).value
+  )
+}.taskValue)
+  .settings(
+    (resourceDirectories in Compile) += (crossTarget in frontend).value,
+    watchSources ++= (watchSources in frontend).value
   )
   .dependsOn(sharedJvm)
 
 
 
-lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared"))
-  .settings(name := "hiStream_shared")
+lazy val shared = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("shared"))
+  .settings(name := "shared")
   .settings(commonSettings: _*)
-
 
 lazy val sharedJvm = shared.jvm
 lazy val sharedJs = shared.js
 
-def commonSettings = Seq(
-  version := "1.2.0",
-  scalaVersion := scalaV
-)
+
+
 
 
 

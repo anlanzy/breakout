@@ -1,4 +1,4 @@
-package com.neo.sk.hiStream.snake.scalajs
+package com.neo.sk.breakout.front
 
 import com.neo.sk.hiStream.snake.Protocol.GridDataSync
 import com.neo.sk.hiStream.snake._
