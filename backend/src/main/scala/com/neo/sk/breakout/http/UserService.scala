@@ -17,6 +17,6 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
   * create by zhaoyin
   * 2019/2/1  5:11 PM
   */
-trait UserService {
+trait UserService extends ServiceUtils with SessionBase {
 
 }
