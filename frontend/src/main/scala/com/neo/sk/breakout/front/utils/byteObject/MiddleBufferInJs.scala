@@ -1,6 +1,7 @@
 package com.neo.sk.breakout.front.utils.byteObject
 
-import com.neo.sk.breakout.util.MiddleBuffer
+
+import com.neo.sk.breakout.shared.util.MiddleBuffer
 
 import scala.scalajs.js
 

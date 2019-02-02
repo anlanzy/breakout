@@ -2,10 +2,6 @@ package com.neo.sk.breakout.front.pages
 
 import scala.xml.Elem
 
-import com.neo.sk.breakout.front.utils.Shortcut
-import com.neo.sk.breakout.front.common.Page
-import com.neo.sk.breakout.front.breakoutClient.GameHolder
-
 /**
   * create by zhaoyin
   * 2019/1/31  4:59 PM

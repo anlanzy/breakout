@@ -1,5 +1,5 @@
 
-package com.neo.sk.breakout.util
+package com.neo.sk.breakout.shared.util
 
 /**
   * User: Taoz

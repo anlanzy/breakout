@@ -19,4 +19,38 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
   */
 trait UserService extends ServiceUtils with SessionBase {
 
+  implicit val system: ActorSystem
+
+  implicit def executor: ExecutionContextExecutor
+
+  implicit val materializer: Materializer
+
+  implicit val scheduler: Scheduler
+
+  implicit val timeout: Timeout
+
+  private[this] val log = LoggerFactory.getLogger(getClass)
+
+  private def playGame = (path("playGame") & get & pathEndOrSingleSlash){
+    parameter(
+      'playerId.as[String],
+      'playerName.as[String],
+      'playType.as[Byte]
+    ){case ( playerId, playerName , playType) =>
+      val session = GypsySession(BaseUserInfo(UserRolesType.player, playerId, playerName, ""), System.currentTimeMillis()).toSessionMap
+      val flowFuture:Future[Flow[Message,Message,Any]]=userManager ? (UserManager.GetWebSocketFlow(Some(PlayerInfo(playerId,playerName)),_))
+      dealFutureResult(
+        flowFuture.map(r=>
+          addSession(session) {
+            handleWebSocketMessages(r)
+          }
+        )
+      )
+    }
+  }
+
+  val userRoutes: Route =
+    pathPrefix("user") {
+      playGame
+    }
 }

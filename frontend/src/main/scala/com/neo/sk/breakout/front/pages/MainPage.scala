@@ -1,6 +1,5 @@
 package com.neo.sk.breakout.front.pages
 
-import com.neo.sk.breakout.front.common.PageSwitcher
 import mhtml._
 import org.scalajs.dom
 import scala.xml.Elem

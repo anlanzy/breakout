@@ -1,14 +1,14 @@
-package com.neo.sk.breakout.front.breakoutClient
+package com.neo.sk.breakout.front.core
 
+import com.neo.sk.breakout.front.breakoutClient.GameClient
+import com.neo.sk.breakout.front.common.Routes.ApiRoute
+import com.neo.sk.breakout.front.utils.NetDelay
+import com.neo.sk.breakout.shared.ptcl.Game._
+import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.shared.ptcl.Protocol._
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw.{ErrorEvent, Event}
-import com.neo.sk.breakout.shared.ptcl.Game._
-import com.neo.sk.breakout.ptcl.Protocol._
-import com.neo.sk.breakout.front.common.Routes.ApiRoute
-import com.neo.sk.breakout.ptcl.GameConfig._
-import com.neo.sk.breakout.front.utils.NetDelay
-import com.neo.sk.breakout.ptcl.Protocol
 /**
   * create by zhaoyin
   * 2019/1/31  5:13 PM

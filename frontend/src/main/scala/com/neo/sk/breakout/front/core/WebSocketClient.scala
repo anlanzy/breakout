@@ -1,15 +1,14 @@
-package com.neo.sk.breakout.front.breakoutClient
+package com.neo.sk.breakout.front.core
 
-import com.neo.sk.breakout.ptcl.Protocol
+
 import org.scalajs.dom.raw._
-import org.seekloud.byteobject.ByteObject.bytesDecode
-import org.seekloud.byteobject.MiddleBufferInJs
-
 import scala.scalajs.js.typedarray.ArrayBuffer
-
+import org.seekloud.byteobject.ByteObject._
+import org.seekloud.byteobject.MiddleBufferInJs
+import com.neo.sk.breakout.shared.ptcl.Protocol
 /**
   * create by zhaoyin
-  * 2019/1/31  5:26 PM
+  * 2019/2/2  11:24 AM
   */
 case class WebSocketClient(
                             connectSuccessCallback: Event => Unit,
@@ -55,10 +54,13 @@ case class WebSocketClient(
             fr.onloadend = { _: Event =>
               val buf = fr.result.asInstanceOf[ArrayBuffer]
               val middleDataInJs = new MiddleBufferInJs(buf)
+              //                val data = bytesDecode[Protocol.GameMessage](middleDataInJs).right.get
               val data = bytesDecode[Protocol.GameMessage](middleDataInJs) match {
+                //                  case Right(msg) => println(s"Right:${msg}");msg
                 case Right(msg) => msg
-                case Left(e) => println(s"Error####:${e.message}")
+                //                  case Left(e) => println(s"Error####:${e.message}")
               }
+              //                val data = bytesDecode[Protocol.GameMessage](middleDataInJs).right.get
               messageHandler(data)
             }
           //          case jsonStringMsg:String =>
@@ -84,5 +86,4 @@ case class WebSocketClient(
     webSocketOpt.foreach(_.close())
     webSocketOpt = None
   }
-
 }

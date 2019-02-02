@@ -1,8 +1,8 @@
-package com.neo.sk.breakout.front.breakoutClient
+package com.neo.sk.breakout.front.core
 
 import org.scalajs.dom.CanvasRenderingContext2D
-import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.ext.Color
+import org.scalajs.dom.html.Canvas
 
 /**
   * create by zhaoyin

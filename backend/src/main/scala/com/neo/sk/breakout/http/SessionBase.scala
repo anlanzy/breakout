@@ -1,18 +1,11 @@
-package com.neo.sk.gypsy.http
+package com.neo.sk.breakout.http
 
-import akka.actor.Status
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive, Directive1, RequestContext}
 import akka.http.scaladsl.server.directives.BasicDirectives
-import com.neo.sk.gypsy.common.AppSettings
-import com.neo.sk.gypsy.common.Constant.UserRolesType
-import com.neo.sk.gypsy.ptcl.UserProtocol.BaseUserInfo
-import com.neo.sk.gypsy.shared.ptcl.ApiProtocol._
-import com.neo.sk.gypsy.utils.{CirceSupport, SessionSupport}
+import akka.http.scaladsl.server.{Directive, Directive1, RequestContext}
 import org.slf4j.LoggerFactory
-import io.circe.generic.auto._
 /**
   * User: Taoz
   * Date: 12/4/2016

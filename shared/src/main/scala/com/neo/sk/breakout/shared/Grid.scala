@@ -1,10 +1,10 @@
-package com.neo.sk.breakout
+package com.neo.sk.breakout.shared
 
 import java.awt.event.KeyEvent
 import scala.util.Random
 
-import com.neo.sk.breakout.ptcl.Game._
-import com.neo.sk.breakout.ptcl.Protocol._
+import com.neo.sk.breakout.shared.ptcl.Game._
+import com.neo.sk.breakout.shared.ptcl.Protocol._
 
 
 /**

@@ -1,4 +1,4 @@
-package com.neo.sk.breakout.ptcl
+package com.neo.sk.breakout.shared.ptcl
 
 /**
   * create by zhaoyin

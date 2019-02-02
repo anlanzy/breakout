@@ -2,7 +2,6 @@ package com.neo.sk.breakout.utils
 
 import java.io.File
 
-import com.neo.sk.breakout.common.AppSettings
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import io.circe.syntax._
