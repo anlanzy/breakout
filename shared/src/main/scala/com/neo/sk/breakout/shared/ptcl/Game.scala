@@ -1,5 +1,7 @@
 package com.neo.sk.breakout.shared.ptcl
 
+
+import com.neo.sk.breakout.shared.ptcl.GameConfig._
 /**
   * create by zhaoyin
   * 2019/1/31  5:20 PM
@@ -19,8 +21,17 @@ object Game {
 
   case class Player(
                      id:String,
-                     name:String
+                     name:String,
+                     x:Int,
+                     targetX:Short = 0,
+                     width:Double =  initWidth
                    )
+
+  case class Brick(
+                  x:Int,
+                  y:Int,
+                  color:Short
+                  )
 
   object GameState{
     val waiting:Int = -1

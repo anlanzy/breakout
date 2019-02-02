@@ -8,4 +8,7 @@ object GameConfig {
 
   val frameRate = 150  //ms
 
+  //玩家初始宽度
+  val initWidth = 20
+
 }

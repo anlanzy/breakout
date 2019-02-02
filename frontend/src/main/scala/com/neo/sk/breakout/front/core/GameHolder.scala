@@ -1,14 +1,16 @@
 package com.neo.sk.breakout.front.core
 
+import org.scalajs.dom
+import org.scalajs.dom.html.Canvas
+import org.scalajs.dom.raw.{ErrorEvent, Event}
+
 import com.neo.sk.breakout.front.breakoutClient.GameClient
 import com.neo.sk.breakout.front.common.Routes.ApiRoute
 import com.neo.sk.breakout.front.utils.NetDelay
 import com.neo.sk.breakout.shared.ptcl.Game._
+import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import com.neo.sk.breakout.shared.ptcl.Protocol._
-import org.scalajs.dom
-import org.scalajs.dom.html.Canvas
-import org.scalajs.dom.raw.{ErrorEvent, Event}
 /**
   * create by zhaoyin
   * 2019/1/31  5:13 PM
@@ -19,7 +21,11 @@ class GameHolder {
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
   private[this] val canvas1 = dom.document.getElementById("GameView").asInstanceOf[Canvas]
   private[this] val ctx = canvas1.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private[this] val offScreenCanvas = dom.document.getElementById("offScreen").asInstanceOf[Canvas]
+  private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val drawGameView=DrawGame(ctx,canvas1,window)
+  private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds)
+
 
   /**状态值**/
   private[this] var justSynced = false
@@ -34,26 +40,23 @@ class GameHolder {
   private[this] var logicFrameTime = System.currentTimeMillis()
   private[this] var syncGridData: scala.Option[GridDataSync] = None
 
-
-
-
-
   val webSocketClient = WebSocketClient(wsConnectSuccess,wsConnectError,wsMessageHandler,wsConnectClose)
+  /**前端为每一个玩家有一个对应的grid**/
   val grid = new GameClient(bounds)
 
 
   def init(): Unit = {
-    drawGameView.drawGameWelcome()
-//    drawOffScreen.drawBackground()
+    drawGameView.drawGameWelcome
+    drawOffScreen.drawBackground
 //    drawGameView.drawGameOn()
 //    drawMiddleView.drawRankMap()
   }
 
   def joinGame(playerId: String,
                playerName:String,
-               roomId: Long
+               playerType:Byte
               ):Unit = {
-    val url = ApiRoute.getpgWebSocketUri(dom.document,playerId,playerName,roomId)
+    val url = ApiRoute.getpgWebSocketUri(dom.document,playerId,playerName,playerType)
     //开启websocket
     webSocketClient.setUp(url)
     //gameloop + gamerender
@@ -72,7 +75,7 @@ class GameHolder {
   //不同步就更新，同步就设置为不同步
   def gameLoop: Unit = {
 //    checkScreenSize
-    NetDelay.ping(webSocketClient)
+//    NetDelay.ping(webSocketClient)
     logicFrameTime = System.currentTimeMillis()
     if (webSocketClient.getWsState) {
       //差不多每三秒同步一次
