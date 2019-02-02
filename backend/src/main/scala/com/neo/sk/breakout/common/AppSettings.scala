@@ -1,9 +1,9 @@
 package com.neo.sk.breakout.common
 
 import java.util.concurrent.TimeUnit
-
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
+import com.neo.sk.breakout.utils.SessionSupport.SessionConfig
 
 /**
   * create by zhaoyin
@@ -31,6 +31,24 @@ object AppSettings {
 
   val appConfig = config.getConfig("app")
 
+  val httpInterface = appConfig.getString("http.interface")
+  val httpPort = appConfig.getInt("http.port")
+
   val projectVersion = appConfig.getString("projectVersion")
+
+  val sConf = config.getConfig("session")
+  val sessionConfig = {
+    SessionConfig(
+      cookieName = sConf.getString("cookie.name"),
+      serverSecret = sConf.getString("serverSecret"),
+      domain = sConf.getOptionalString("cookie.domain"),
+      path = sConf.getOptionalString("cookie.path"),
+      secure = sConf.getBoolean("cookie.secure"),
+      httpOnly = sConf.getBoolean("cookie.httpOnly"),
+      maxAge = sConf.getOptionalDurationSeconds("cookie.maxAge"),
+      sessionEncryptData = sConf.getBoolean("encryptData")
+    )
+  }
+  val sessionTime=sConf.getInt("sessionTime")
 
 }

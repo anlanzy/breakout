@@ -11,7 +11,13 @@ import akka.stream.{ActorAttributes, ActorMaterializer, Materializer, Supervisio
 import akka.util.{ByteString, Timeout}
 import akka.actor.typed.scaladsl.AskPattern._
 import org.slf4j.LoggerFactory
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
+import com.neo.sk.breakout.http.SessionBase.BreakoutSession
+import com.neo.sk.breakout.ptcl.UserProtocol._
+import com.neo.sk.breakout.common.Constant._
+import com.neo.sk.breakout.core.UserManager
+import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
 
 /**
   * create by zhaoyin
@@ -37,8 +43,9 @@ trait UserService extends ServiceUtils with SessionBase {
       'playerName.as[String],
       'playType.as[Byte]
     ){case ( playerId, playerName , playType) =>
-      val session = GypsySession(BaseUserInfo(UserRolesType.player, playerId, playerName, ""), System.currentTimeMillis()).toSessionMap
-      val flowFuture:Future[Flow[Message,Message,Any]]=userManager ? (UserManager.GetWebSocketFlow(Some(PlayerInfo(playerId,playerName)),_))
+      //TODO 1、不应该在这里才建立session的 2、根据playerType来选择玩家类型（会员or游客）
+      val session = BreakoutSession(BaseUserInfo(UserRolesType.tourist, playerId, playerName), System.currentTimeMillis()).toSessionMap
+      val flowFuture:Future[Flow[Message,Message,Any]]= userManager ? (UserManager.GetWebSocketFlow(Some(BaseUserInfo(UserRolesType.tourist,playerId,playerName)),_))
       dealFutureResult(
         flowFuture.map(r=>
           addSession(session) {

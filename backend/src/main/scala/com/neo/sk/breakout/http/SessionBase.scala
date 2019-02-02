@@ -6,6 +6,12 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.BasicDirectives
 import akka.http.scaladsl.server.{Directive, Directive1, RequestContext}
 import org.slf4j.LoggerFactory
+import io.circe.generic.auto._
+import com.neo.sk.breakout.utils.{CirceSupport, SessionSupport}
+import com.neo.sk.breakout.common.AppSettings
+import com.neo.sk.breakout.ptcl.UserProtocol._
+import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
+import com.neo.sk.breakout.common.Constant._
 /**
   * User: Taoz
   * Date: 12/4/2016
@@ -18,15 +24,14 @@ object SessionBase{
   val SessionTypeKey = "STKey"
 
   object SessionKeys {
-    val sessionType = "gypsy_session"
-    val userType = "gypsy_userType"
-    val userId = "gypsy_userId"
-    val name = "gypsy_name"
-    val headImg = "head_img"
-    val timestamp = "gypsy_timestamp"
+    val sessionType = "breakout_session"
+    val userType = "breakout_userType"
+    val userId = "breakout_userId"
+    val name = "breakout_name"
+    val timestamp = "breakout_timestamp"
   }
 
-  case class GypsySession(
+  case class BreakoutSession(
                              userInfo: BaseUserInfo,
                              time: Long
                            ) {
@@ -36,7 +41,6 @@ object SessionBase{
         SessionKeys.userType -> userInfo.userType,
         SessionKeys.userId -> userInfo.userId.toString,
         SessionKeys.name -> userInfo.name,
-        SessionKeys.headImg -> userInfo.headImg,
         SessionKeys.timestamp -> time.toString
       )
     }
@@ -51,18 +55,17 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
   override val sessionConfig = AppSettings.sessionConfig
   private val timeout = AppSettings.sessionTime * 24 * 60 * 60 * 1000
   implicit class SessionTransformer(sessionMap: Map[String, String]) {
-    def toGypsySession:Option[GypsySession] = {
+    def toBreakoutSession:Option[BreakoutSession] = {
       try {
         if (sessionMap.get(SessionTypeKey).exists(_.equals(SessionKeys.sessionType))) {
           if(System.currentTimeMillis()-sessionMap(SessionKeys.timestamp).toLong> timeout){
             None
           }else {
-            Some(GypsySession(
+            Some(BreakoutSession(
               BaseUserInfo(
                 sessionMap(SessionKeys.userType),
                 sessionMap(SessionKeys.userId),
-                sessionMap(SessionKeys.name),
-                sessionMap(SessionKeys.headImg)
+                sessionMap(SessionKeys.name)
               ),
               sessionMap(SessionKeys.timestamp).toLong
             ))
@@ -82,8 +85,8 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
   def loggingAction: Directive[Tuple1[RequestContext]] = extractRequestContext.map { ctx =>
     ctx
   }
-  protected val optionalGypsySession: Directive1[Option[GypsySession]] = optionalSession.flatMap {
-    case Right(sessionMap) => BasicDirectives.provide(sessionMap.toGypsySession)
+  protected val optionalBreakoutSession: Directive1[Option[BreakoutSession]] = optionalSession.flatMap {
+    case Right(sessionMap) => BasicDirectives.provide(sessionMap.toBreakoutSession)
     case Left(error) =>
       log.debug(error)
       BasicDirectives.provide(None)
@@ -93,7 +96,7 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
 
   //管理员
   def adminAuth(f: BaseUserInfo => server.Route) = loggingAction { ctx =>
-    optionalGypsySession {
+    optionalBreakoutSession {
       case Some(session) =>
         if(session.userInfo.userType == UserRolesType.devManager){
           f(session.userInfo)
@@ -106,10 +109,9 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
     }
   }
 
-
   //会员
   def memberAuth(f: BaseUserInfo => server.Route) = loggingAction { ctx =>
-    optionalGypsySession {
+    optionalBreakoutSession {
       case Some(session) =>
         if(session.userInfo.userType == UserRolesType.comMember){
           f(session.userInfo)
@@ -122,11 +124,13 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
     }
   }
 
+  //TODO 游客身份验证
+
 
 
   //管理员和会员
   def customerAuth(f: BaseUserInfo => server.Route) = loggingAction { ctx =>
-    optionalGypsySession {
+    optionalBreakoutSession {
       case Some(session) =>
         if(session.userInfo.userType == UserRolesType.devManager || session.userInfo.userType == UserRolesType.comMember){
           f(session.userInfo)
@@ -139,11 +143,10 @@ trait SessionBase extends SessionSupport with ServiceUtils with CirceSupport{
     }
   }
 
-  def parseGypsySession(f: BaseUserInfo => server.Route) = loggingAction { ctx =>
-    optionalGypsySession {
+  def parseBreakoutSession(f: BaseUserInfo => server.Route) = loggingAction { ctx =>
+    optionalBreakoutSession {
       case Some(session) =>
         f(session.userInfo)
-
       case None =>
         complete(noSessionError())
     }

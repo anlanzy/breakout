@@ -8,6 +8,8 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import akka.actor.typed.scaladsl.adapter._
 
+import com.neo.sk.breakout.http.HttpService
+import com.neo.sk.breakout.core.{RoomManager, UserManager}
 /**
   * create by zhaoyin
   * 2019/1/31  9:48 PM
@@ -15,6 +17,7 @@ import akka.actor.typed.scaladsl.adapter._
 object Boot extends HttpService{
 
   import concurrent.duration._
+  import com.neo.sk.breakout.common.AppSettings._
 
   override implicit val system = ActorSystem("breakout", config)
   // the executor should not be the default dispatcher.
@@ -31,6 +34,12 @@ object Boot extends HttpService{
 
   val userManager:ActorRef[UserManager.Command] = system.spawn(UserManager.create(),"userManager")
 
-
+  def main(args: Array[String]) {
+    log.info("Starting.")
+    Http().bindAndHandle(routes, httpInterface, httpPort)
+    log.info(s"Listen to the $httpInterface:$httpPort")
+    log.info("Done.")
+    println(s"Server is listening on http://localhost:${httpPort}/breakout")
+  }
 
 }

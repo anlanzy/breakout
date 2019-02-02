@@ -31,12 +31,7 @@ object Protocol {
   case class GridDataSync(
                            frameCount: Int,
                            playerDetails: List[Player],
-                           massDetails: List[Mass],
-                           virusDetails: Map[Long,Virus],
-                           scale: Double, //缩放比例
-                           //                           playersPosition: List[PlayerPosition],
-                           var newFoodDetails:List[Food]=Nil, //增量数据传输
-                           var eatenFoodDetails:List[Food]=Nil
+                           brickDetails: List[Brick]
                          ) extends GameMessage
 
   case class GridData4Bot(
@@ -90,7 +85,7 @@ object Protocol {
 
   case class PlayerSplit(player: Map[Byte,Player]) extends GameMessage
 
-  case class PlayerJoin(id:Byte, player:Player) extends GameMessage //id: 映射id
+  case class PlayerJoin(id:String, player:Player) extends GameMessage //id: 邮箱
 
   case class RemoveVirus(virus: Map[Long,Virus]) extends GameMessage
 

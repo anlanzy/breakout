@@ -14,8 +14,6 @@ import com.neo.sk.breakout.shared.ptcl.Protocol._
   */
 trait Grid {
 
-  val boundary: Point
-
   def debug(msg: String): Unit
 
   def info(msg: String): Unit
@@ -25,10 +23,16 @@ trait Grid {
   var frameCount = 0
   //玩家列表
   var playerMap = Map.empty[String,Player]
+
+  //砖块列表 位置->颜色
+  var brickMap = Map.empty[Point, Short]
+
   //操作列表  帧数->(用户ID -> 操作)
   var actionMap = Map.empty[Int, Map[String, KC]]
 
   var mouseActionMap = Map.empty[Int, Map[String, MP]]
+
+
 
 
   //用户离开，从列表中去掉
@@ -75,6 +79,7 @@ trait Grid {
 
 
   private[this] def updateSpots() = {
+
   }
 
   private[this] def updatePlayer() = {

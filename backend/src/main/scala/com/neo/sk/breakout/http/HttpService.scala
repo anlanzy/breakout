@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContextExecutor
   * create by zhaoyin
   * 2019/2/1  4:56 PM
   */
-trait HttpService extends ResourceService{
+trait HttpService extends ResourceService with UserService{
 
   implicit val system: ActorSystem
 

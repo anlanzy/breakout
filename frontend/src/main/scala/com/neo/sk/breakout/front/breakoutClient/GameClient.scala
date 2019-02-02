@@ -11,7 +11,13 @@ import com.neo.sk.breakout.shared.ptcl.Game._
   */
 class GameClient(override val boundary: Point) extends Grid{
 
+  override def debug(msg: String): Unit = println(msg)
+
+  override def info(msg: String): Unit = println(msg)
+
   var myId = ""
+
+
 
 
 }

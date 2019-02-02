@@ -8,6 +8,8 @@ import akka.stream.{ActorAttributes, Supervision}
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 
+import com.neo.sk.breakout.ptcl.UserProtocol
+import com.neo.sk.breakout.shared.ptcl.Protocol
 /**
   * create by zhaoyin
   * 2019/2/1  5:35 PM
@@ -22,7 +24,7 @@ object UserManager {
 
   final case class ChildDead[U](name: String, childRef: ActorRef[U]) extends Command
 
-  final case class GetWebSocketFlow(playerInfo: Option[ApiProtocol.PlayerInfo] = None,roomId:Option[Long] = None,replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
+  final case class GetWebSocketFlow(playerInfo: Option[UserProtocol.BaseUserInfo] = None,replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
 
   def create(): Behavior[Command] = {
     log.debug(s"UserManager start...")
@@ -38,24 +40,24 @@ object UserManager {
   private def idle()(
     implicit timer: TimerScheduler[Command]
   ):Behavior[Command] = {
-    Behaviors.receive[Command]{(ctx, msg) =>
+    Behaviors.receive[Command]{(ctx, msg) =>z
       msg match {
-        case GetWebSocketFlow(playerInfoOpt,roomIdOpt,replyTo) =>
+        case GetWebSocketFlow(playerInfoOpt,replyTo) =>
           val playerInfo = playerInfoOpt.get
-          getUserActorOpt(ctx, playerInfo.playerId) match {
+          getUserActorOpt(ctx, playerInfo.userId) match {
             case Some(userActor) =>
               userActor ! UserActor.ChangeBehaviorToInit
             case None =>
           }
           val userActor = getUserActor(ctx,playerInfo)
-          replyTo ! getWebSocketFlow(playerInfo,0L,userActor)
-          userActor ! UserActor.StartGame(roomIdOpt)
+          replyTo ! getWebSocketFlow(playerInfo,userActor)
+          userActor ! UserActor.StartGame
           Behaviors.same
       }
     }
   }
 
-  private def getWebSocketFlow(playerInfo: ApiProtocol.PlayerInfo,recordId:Long,userActor: ActorRef[UserActor.Command]):Flow[Message,Message,Any] = {
+  private def getWebSocketFlow(playerInfo: UserProtocol.BaseUserInfo,userActor: ActorRef[UserActor.Command]):Flow[Message,Message,Any] = {
     import org.seekloud.byteobject.ByteObject._
 
     import scala.language.implicitConversions
@@ -91,8 +93,8 @@ object UserManager {
         // unpack incoming WS text messages...
         // This will lose (ignore) messages not received in one chunk (which is
         // unlikely because chat messages are small) but absolutely possible
-        // FIXME: We need to handle TextMessage.Streamed as well.
-      }.via(UserActor.flow(playerInfo.playerId,playerInfo.nickname,recordId,userActor))
+      }
+      .via(UserActor.flow(playerInfo.userId,playerInfo.userName,userActor))
       .map{
         case t:Protocol.Wrap =>
           val b = ByteString(t.ws)
@@ -185,8 +187,8 @@ object UserManager {
 
 
 
-  private def getUserActor(ctx: ActorContext[Command],userInfo:ApiProtocol.PlayerInfo):ActorRef[UserActor.Command] = {
-    val childName = s"UserActor-${userInfo.playerId}"
+  private def getUserActor(ctx: ActorContext[Command],userInfo:UserProtocol.BaseUserInfo):ActorRef[UserActor.Command] = {
+    val childName = s"UserActor-${userInfo.userId}"
     ctx.child(childName).getOrElse{
       val actor = ctx.spawn(UserActor.create(userInfo),childName)
       ctx.watchWith(actor,ChildDead(childName,actor))

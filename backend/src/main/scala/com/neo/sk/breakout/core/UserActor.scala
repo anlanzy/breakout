@@ -1,5 +1,10 @@
 package com.neo.sk.breakout.core
 
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.stream.OverflowStrategy
+import org.slf4j.LoggerFactory
+import akka.stream.scaladsl.Flow
+import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.neo.sk.breakout.shared.ptcl.Protocol
@@ -18,9 +23,16 @@ object UserActor {
 
   private final case object BehaviorChangeKey
 
+
   trait Command
 
   case class UserFrontActor(actor: ActorRef[Protocol.WsMsgSource]) extends Command
+
+  case object ChangeBehaviorToInit extends Command
+
+  case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command
+
+  case object StartGame extends Command
 
   private[this] def switchBehavior(ctx: ActorContext[Command],
                                    behaviorName: String,
@@ -34,6 +46,56 @@ object UserActor {
     timer.cancel(BehaviorChangeKey)
     durationOpt.foreach(timer.startSingleTimer(BehaviorChangeKey,timeOut,_))
     stashBuffer.unstashAll(ctx,behavior)
+  }
+  private def sink(actor: ActorRef[Command],recordId:Long) = ActorSink.actorRef[Command](
+    ref = actor,
+    onCompleteMessage = CompleteMsgFront,
+    onFailureMessage = FailMsgFront.apply
+  )
+
+  def flow(id:String,name:String,recordId:Long,actor:ActorRef[UserActor.Command]):Flow[WebSocketMsg, Protocol.WsMsgSource,Any] = {
+    val in = Flow[UserActor.WebSocketMsg]
+      .map {a=>
+        val req = a.reqOpt.get
+        req match{
+          case KC(_,keyCode,f,n)=>
+            log.debug(s"键盘事件$keyCode")
+            Key(keyCode,f,n)
+
+          case MP(_,clientX,clientY,f,n)=>
+            Mouse(clientX,clientY,f,n)
+
+          case Ping(timestamp)=>
+            NetTest(id,timestamp)
+
+//          case ReLiveMsg(frame) =>
+//            UserReLiveMsg(frame)
+
+          case Protocol.CreateRoom =>
+            CreateRoom
+
+          case Protocol.JoinRoom(roomIdOp) =>
+            log.info("JoinRoom!!!!!!")
+            StartGame(roomIdOp)
+
+          case _=>
+            UnKnowAction
+        }
+      }
+      .to(sink(actor,recordId))
+
+    val out =
+      ActorSource.actorRef[Protocol.WsMsgSource](
+        completionMatcher = {
+          case Protocol.CompleteMsgServer ⇒
+        },
+        failureMatcher = {
+          case Protocol.FailMsgServer(e)  ⇒ e
+        },
+        bufferSize = 128,
+        overflowStrategy = OverflowStrategy.dropHead
+      ).mapMaterializedValue(outActor => actor ! UserFrontActor(outActor))
+    Flow.fromSinkAndSource(in, out)
   }
 
   def create(userInfo:PlayerInfo):Behavior[Command] = {
