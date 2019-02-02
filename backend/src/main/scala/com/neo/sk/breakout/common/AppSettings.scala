@@ -51,4 +51,8 @@ object AppSettings {
   }
   val sessionTime=sConf.getInt("sessionTime")
 
+  val gameConfig=config.getConfig("game")
+  val limitCount=gameConfig.getInt("limitCount")
+
+
 }

@@ -13,4 +13,5 @@ object GameConfig {
   val brickW = 16
   val brickH = 8
 
+
 }

@@ -41,11 +41,12 @@ trait UserService extends ServiceUtils with SessionBase {
     parameter(
       'playerId.as[String],
       'playerName.as[String],
-      'playType.as[Byte]
-    ){case ( playerId, playerName , playType) =>
+      'playType.as[Byte],
+      'roomId.as[Long].?
+    ){case ( playerId, playerName, playType, roomIdOpt) =>
       //TODO 1、不应该在这里才建立session的 2、根据playerType来选择玩家类型（会员or游客）
       val session = BreakoutSession(BaseUserInfo(UserRolesType.tourist, playerId, playerName), System.currentTimeMillis()).toSessionMap
-      val flowFuture:Future[Flow[Message,Message,Any]]= userManager ? (UserManager.GetWebSocketFlow(Some(BaseUserInfo(UserRolesType.tourist,playerId,playerName)),_))
+      val flowFuture:Future[Flow[Message,Message,Any]]= userManager ? (UserManager.GetWebSocketFlow(Some(BaseUserInfo(UserRolesType.tourist,playerId,playerName)),roomIdOpt,_))
       dealFutureResult(
         flowFuture.map(r=>
           addSession(session) {

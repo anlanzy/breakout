@@ -5,10 +5,11 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.scaladsl.Behaviors
 import org.seekloud.byteobject.MiddleBufferInJvm
 import org.slf4j.LoggerFactory
+
 import scala.concurrent.duration._
 import scala.collection.mutable
-
 import com.neo.sk.breakout.breakoutServer.GameServer
+import com.neo.sk.breakout.ptcl.UserProtocol.BaseUserInfo
 import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.ptcl.Protocol
@@ -27,7 +28,7 @@ object RoomActor {
 
   private case object Sync extends Command
 
-  case class JoinRoom(playerInfo: PlayerInfo, userActor:ActorRef[UserActor.Command]) extends Command
+  case class JoinRoom(playerInfo: BaseUserInfo,roomId:Long, userActor:ActorRef[UserActor.Command]) extends Command
 
 
   def create(roomId:Long):Behavior[Command] = {

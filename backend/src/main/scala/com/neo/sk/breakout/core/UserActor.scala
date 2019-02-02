@@ -7,11 +7,17 @@ import akka.stream.scaladsl.Flow
 import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
+import com.neo.sk.breakout.core.UserActor.StartGame
 import com.neo.sk.breakout.shared.ptcl.Protocol
-import org.seekloud.byteobject.MiddleBufferInJvm
 import org.slf4j.LoggerFactory
+import org.seekloud.byteobject.ByteObject._
+import org.seekloud.byteobject.MiddleBufferInJvm
 
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
+import com.neo.sk.breakout.shared.ptcl.Protocol._
+import com.neo.sk.breakout.ptcl.UserProtocol._
+import com.neo.sk.breakout.Boot.roomManager
 
 /**
   * create by zhaoyin
@@ -20,6 +26,8 @@ import scala.concurrent.duration.FiniteDuration
 object UserActor {
 
   private val log = LoggerFactory.getLogger(this.getClass)
+
+  private final val InitTime = Some(5.minutes)
 
   private final case object BehaviorChangeKey
 
@@ -30,9 +38,31 @@ object UserActor {
 
   case object ChangeBehaviorToInit extends Command
 
+  case class JoinRoom(playerInfo: BaseUserInfo,roomIdOpt:Option[Long] = None,userActor:ActorRef[UserActor.Command]) extends Command with RoomManager.Command
+
   case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command
 
-  case object StartGame extends Command
+  case class TimeOut(msg: String) extends Command
+
+  case class StartGame(roomIdOpt:Option[Long]) extends Command
+
+  case object CompleteMsgFront extends Command
+
+  case class FailMsgFront(ex: Throwable) extends Command
+
+  case class Key(keyCode: Int,frame:Int,n:Int) extends Command with RoomActor.Command
+
+  case class Mouse(clientX:Short,clientY:Short,frame:Int,n:Int) extends Command with RoomActor.Command
+
+  case class NetTest(id: String, createTime: Long) extends Command with RoomActor.Command
+
+  case class UserLeft[U](actorRef: ActorRef[U]) extends Command
+
+  case class JoinRoomSuccess(roomId:Long, roomActor: ActorRef[RoomActor.Command]) extends Command with RoomManager.Command
+
+  case class Left(playerInfo: BaseUserInfo) extends Command with RoomActor.Command
+
+  private case object UnKnowAction extends Command
 
   private[this] def switchBehavior(ctx: ActorContext[Command],
                                    behaviorName: String,
@@ -47,13 +77,13 @@ object UserActor {
     durationOpt.foreach(timer.startSingleTimer(BehaviorChangeKey,timeOut,_))
     stashBuffer.unstashAll(ctx,behavior)
   }
-  private def sink(actor: ActorRef[Command],recordId:Long) = ActorSink.actorRef[Command](
+  private def sink(actor: ActorRef[Command]) = ActorSink.actorRef[Command](
     ref = actor,
     onCompleteMessage = CompleteMsgFront,
     onFailureMessage = FailMsgFront.apply
   )
 
-  def flow(id:String,name:String,recordId:Long,actor:ActorRef[UserActor.Command]):Flow[WebSocketMsg, Protocol.WsMsgSource,Any] = {
+  def flow(id:String,name:String,actor:ActorRef[UserActor.Command]):Flow[WebSocketMsg, Protocol.WsMsgSource,Any] = {
     val in = Flow[UserActor.WebSocketMsg]
       .map {a=>
         val req = a.reqOpt.get
@@ -82,7 +112,7 @@ object UserActor {
             UnKnowAction
         }
       }
-      .to(sink(actor,recordId))
+      .to(sink(actor))
 
     val out =
       ActorSource.actorRef[Protocol.WsMsgSource](
@@ -98,19 +128,50 @@ object UserActor {
     Flow.fromSinkAndSource(in, out)
   }
 
-  def create(userInfo:PlayerInfo):Behavior[Command] = {
+  def create(userInfo:BaseUserInfo):Behavior[Command] = {
     Behaviors.setup[Command]{ctx =>
       log.debug(s"${ctx.self.path} is starting...")
       implicit val stashBuffer = StashBuffer[Command](Int.MaxValue)
       Behaviors.withTimers[Command]{ implicit timer =>
         implicit val sendBuffer = new MiddleBufferInJvm(8192)
-        switchBehavior(ctx,"idle", idle(userInfo,frontActor))
+        switchBehavior(ctx,"init",init(userInfo),InitTime,TimeOut("init"))
       }
     }
   }
+  private def init(userInfo:BaseUserInfo)(
+    implicit stashBuffer:StashBuffer[Command],
+    sendBuffer:MiddleBufferInJvm,
+    timer:TimerScheduler[Command]
+  ): Behavior[Command] =
+    Behaviors.receive[Command]{(ctx, msg) =>
+      msg match {
+        case UserFrontActor(frontActor) =>
+          ctx.watchWith(frontActor,UserLeft(frontActor))
+          switchBehavior(ctx,"idle", idle(userInfo,frontActor))
+
+        case UserLeft(actor) =>
+          ctx.unwatch(actor)
+          Behaviors.stopped
+
+        case UnKnowAction =>
+          Behavior.same
+
+        case ChangeBehaviorToInit=>
+          Behaviors.same
+
+        case TimeOut(m) =>
+          log.debug(s"${ctx.self.path} is time out when busy,msg=${m}")
+          Behaviors.stopped
+
+        case unknowMsg =>
+          stashBuffer.stash(unknowMsg)
+          Behavior.same
+      }
+
+    }
 
   private def idle(
-                    userInfo:PlayerInfo,
+                    userInfo:BaseUserInfo,
                     frontActor: ActorRef[Protocol.WsMsgSource]
                   )(
                     implicit stashBuffer:StashBuffer[Command],
@@ -119,17 +180,12 @@ object UserActor {
                   ):Behavior[Command] =
     Behaviors.receive[Command]{(ctx,msg) =>
       msg match {
-        case UserFrontActor(frontActor) =>
-          ctx.watchWith(frontActor,UserLeft(frontActor))
-          idle(userInfo,System.currentTimeMillis(),frontActor)
-
-        case StartGame(roomIdOp) =>
-          roomManager ! UserActor.JoinRoom(userInfo,ctx.self)
+        case StartGame(roomIdOpt) =>
+          roomManager ! UserActor.JoinRoom(userInfo,roomIdOpt,ctx.self)
           Behaviors.same
 
         case JoinRoomSuccess(roomId,roomActor)=>
-          frontActor ! Protocol.Wrap(Protocol.JoinRoomSuccess(userInfo.playerId,roomId).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
-          //          frontActor ! Protocol.JoinRoomSuccess(userInfo.playerId,roomId)
+          frontActor ! Protocol.Wrap(Protocol.JoinRoomSuccess(userInfo.userId,roomId).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
           switchBehavior(ctx,"play",play(userInfo,frontActor,roomActor))
 
         case UserLeft(actor) =>
@@ -152,7 +208,7 @@ object UserActor {
     }
 
   private def play(
-                    userInfo:PlayerInfo,
+                    userInfo:BaseUserInfo,
                     frontActor:ActorRef[Protocol.WsMsgSource],
                     roomActor: ActorRef[RoomActor.Command])(
                     implicit stashBuffer:StashBuffer[Command],

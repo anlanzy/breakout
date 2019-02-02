@@ -81,7 +81,7 @@ class GameServer extends Grid{
 
 
   def getAllGridData: Protocol.GridDataSync = {
-    var brickDetails:List[Brick] = Nil
+    var brickDetails: List[Brick] = Nil
     brickMap.foreach(item => brickDetails ::= Brick(item._1.x, item._1.y, item._2))
     Protocol.GridDataSync(
       frameCount,
