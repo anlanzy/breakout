@@ -12,7 +12,8 @@ import com.neo.sk.breakout.front.utils.Shortcut
 class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page {
 
   private val gameView = <canvas id ="GameView"></canvas>
-  private val offScreen = <canvas id="offScreen"></canvas>
+  private val topView = <canvas id ="TopView"></canvas>
+  private val offScreen = <canvas id="OffScreen"></canvas>
 
   def init()={
     val gameHolder = new GameHolder

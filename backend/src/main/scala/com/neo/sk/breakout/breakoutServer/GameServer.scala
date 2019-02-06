@@ -70,7 +70,7 @@ class GameServer extends Grid{
   //生成玩家
   private[this] def genWaitingStar() = {
     waitingJoin.filterNot(kv => playerMap.contains(kv._1)).foreach{ case (id, name) =>
-      val player = Player(id,name, Boundary.w/2)
+      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h))
       playerMap += id -> player
 
       dispatch(subscriber)(PlayerJoin(id,player))

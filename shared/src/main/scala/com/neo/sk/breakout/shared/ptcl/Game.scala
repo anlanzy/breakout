@@ -24,8 +24,19 @@ object Game {
                      name:String,
                      x:Int,
                      targetX:Short = 0,
-                     width:Double =  initWidth
+                     width:Double =  initWidth,
+                     ball: Ball
                    )
+
+  case class Ball(
+                   x:Int,
+                   y:Int,
+                   radius:Short = initBallRadius,
+                   speed:Float = initBallSpeed,//TODO 存疑？
+                   speedX:Float = 0,
+                   speedY:Float = 0,
+                   onBoard:Boolean = true //TODO 是否需要该参数
+                 )
 
   case class Brick(
                   x:Int,

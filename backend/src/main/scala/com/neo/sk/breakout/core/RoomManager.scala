@@ -52,7 +52,7 @@ object RoomManager {
                   //该房间是否满员
                   if(ls.length < AppSettings.limitCount){
                     roomInUse.put(roomIdOpt.get,playerInfo.userId :: ls)
-                    getRoomActor(ctx,roomIdOpt.get) ! RoomActor.JoinRoom(playerInfo,roomIdOpt.get,userActor)
+                    getRoomActor(ctx,roomIdOpt.get) ! RoomActor.JoinRoom(playerInfo,userActor)
                   }else{
                     //TODO 告诉用户，该房间已满
                   }

@@ -38,6 +38,8 @@ object UserActor {
 
   case object ChangeBehaviorToInit extends Command
 
+  case class DispatchMsg(msg:Protocol.WsMsgSource) extends Command
+
   case class JoinRoom(playerInfo: BaseUserInfo,roomIdOpt:Option[Long] = None,userActor:ActorRef[UserActor.Command]) extends Command with RoomManager.Command
 
   case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command

@@ -3,6 +3,7 @@ package com.neo.sk.breakout.front.core
 import org.scalajs.dom
 import org.scalajs.dom.html.Canvas
 import org.scalajs.dom.raw.{ErrorEvent, Event}
+import java.util.concurrent.atomic.AtomicInteger
 
 import com.neo.sk.breakout.front.breakoutClient.GameClient
 import com.neo.sk.breakout.front.common.Routes.ApiRoute
@@ -18,12 +19,13 @@ import com.neo.sk.breakout.shared.ptcl.Protocol._
 class GameHolder {
 
   val bounds = Point(Boundary.w, Boundary.h)
-  var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
   private[this] val canvas1 = dom.document.getElementById("GameView").asInstanceOf[Canvas]
   private[this] val ctx = canvas1.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  private[this] val offScreenCanvas = dom.document.getElementById("offScreen").asInstanceOf[Canvas]
+  private[this] val canvas2 = dom.document.getElementById("TopView").asInstanceOf[Canvas]
+  private[this] val ctx2 = canvas2.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private[this] val offScreenCanvas = dom.document.getElementById("OffScreen").asInstanceOf[Canvas]
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  private[this] val drawGameView=DrawGame(ctx,canvas1,window)
+  private[this] val drawGameView=DrawGame(ctx,canvas1,bounds)
   private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds)
 
 
@@ -39,11 +41,15 @@ class GameHolder {
   var keyInFlame = false
   private[this] var logicFrameTime = System.currentTimeMillis()
   private[this] var syncGridData: scala.Option[GridDataSync] = None
-
+  private[this] val actionSerialNumGenerator = new AtomicInteger(0)
+  var mp = MP(None,0,0,0,0)
+//  var fmp = MP(None,0,0,0,0)
   val webSocketClient = WebSocketClient(wsConnectSuccess,wsConnectError,wsMessageHandler,wsConnectClose)
-  /**前端为每一个玩家有一个对应的grid**/
-  val grid = new GameClient(bounds)
 
+  /**前端为每一个玩家有一个对应的grid**/
+  val grid = new GameClient
+
+  def getActionSerialNum=actionSerialNumGenerator.getAndIncrement()
 
   def init(): Unit = {
     drawGameView.drawGameWelcome
@@ -61,6 +67,7 @@ class GameHolder {
     webSocketClient.setUp(url)
     //gameloop + gamerender
     start()
+    addActionListenEvent
   }
   def start(): Unit = {
     println("start---")
@@ -82,9 +89,6 @@ class GameHolder {
       //不同步
       if (!justSynced) {
         keyInFlame = false
-        if(grid.frameCount % 2 ==0){
-          updateMousePos
-        }
         grid.update()
       } else {
         if (syncGridData.nonEmpty) {
@@ -116,6 +120,25 @@ class GameHolder {
     }
   }
 
+  def addActionListenEvent = {
+    canvas2.focus()
+    canvas2.onclick = { (e: dom.MouseEvent) =>
+      //球在木板上时选择方向发射
+      if(grid.ballOnBoard){
+        val ballStart = Protocol.BallStart(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+        mp = MP(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+        grid.addBallMouseActionWithFrame(grid.myId, mp)
+        webSocketClient.sendMsg(ballStart)
+        grid.ballOnBoard = false
+      }
+    }
+    canvas2.onmousemove = { (e: dom.MouseEvent) =>
+      mp = MP(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+      grid.addMouseActionWithFrame(grid.myId, mp)
+      webSocketClient.sendMsg(mp)
+    }
+  }
+
   private def wsMessageHandler(data:GameMessage):Unit = {
     data match {
       case Protocol.Id(id) =>
@@ -135,8 +158,6 @@ class GameHolder {
     }
 
   }
-
-
 
   private def wsConnectSuccess(e:Event) = {
     println(s"连接服务器成功")

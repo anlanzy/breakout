@@ -34,17 +34,7 @@ object Protocol {
                            brickDetails: List[Brick]
                          ) extends GameMessage
 
-  case class GridData4Bot(
-                           frameCount:Long,
-                           playerDetails:List[Player],
-                           massDetails: List[Mass],
-                           virusDetails: Map[Long,Virus],
-                           foodDetails:List[Food]
-                         )
 
-  case class FeedApples(
-                         aLs: List[Food]
-                       ) extends GameMessage
 
   case class Id(id: String) extends GameMessage
 
@@ -68,26 +58,15 @@ object Protocol {
 
   case class MatchRoomError() extends GameMessage
 
-  /**cell改变事件：**/
-  /**1、玩家自己融合**/
-  case class UserMerge(playerMap:Map[Byte,List[(Long,Long)]])extends GameMessage
-  /**1、玩家和其他玩家融合**/
-  case class UserCrash(crashMap:Map[Byte,List[Cell]]) extends GameMessage
 
   case class Pong(timestamp: Long)extends GameMessage
-
-  case class AddVirus(virus:Map[Long,Virus]) extends GameMessage
 
   case class VictoryMsg(id:String,name:String,score:Short,totalFrame:Int) extends GameMessage
 
   //  按F分裂的球发送的全量消息
   //  case class SplitPlayer(splitPlayers:Map[String,List[Cell]]) extends GameMessage
 
-  case class PlayerSplit(player: Map[Byte,Player]) extends GameMessage
-
   case class PlayerJoin(id:String, player:Player) extends GameMessage //id: 邮箱
-
-  case class RemoveVirus(virus: Map[Long,Virus]) extends GameMessage
 
   case class JoinRoomSuccess(playerId:String, roomId:Long) extends GameMessage
 
@@ -121,6 +100,8 @@ object Protocol {
   case class KC(id: Option[String],kC: Int, override val f:Int,override val sN:Int) extends UserAction with GameMessage
 
   case object PressSpace extends UserAction
+
+  case class BallStart(id:Option[Byte], cX:Short, cY:Short, override val f:Int, override val sN:Int) extends UserAction
 
   //复活
   case class ReLiveMsg(override val f:Int) extends UserAction with GameMessage

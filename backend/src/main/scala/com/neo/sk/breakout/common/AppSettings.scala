@@ -53,6 +53,8 @@ object AppSettings {
 
   val gameConfig=config.getConfig("game")
   val limitCount=gameConfig.getInt("limitCount")
+  val SyncCount = gameConfig.getInt("SyncCount")
+
 
 
 }
