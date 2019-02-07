@@ -16,7 +16,7 @@ import com.neo.sk.breakout.shared.ptcl.Protocol
   * create by zhaoyin
   * 2019/2/1  5:34 PM
   */
-class GameServer extends Grid{
+class GameServer(override val boundary: Point,override val window: Point) extends Grid{
 
   private[this] val log = LoggerFactory.getLogger(this.getClass)
 

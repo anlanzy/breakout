@@ -1,18 +1,22 @@
 package com.neo.sk.breakout.shared
 
 import java.awt.event.KeyEvent
+import scala.math._
 
 import scala.util.Random
 import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.Protocol._
-
-
+import com.neo.sk.breakout.shared.ptcl.GameConfig._
 /**
   * User: Taoz
   * Date: 9/1/2016
   * Time: 5:34 PM
   */
 trait Grid {
+
+  val boundary: Point
+
+  val window: Point
 
   def debug(msg: String): Unit
 
@@ -99,37 +103,20 @@ trait Grid {
     updatePlayer()
     /**更新小球的位置**/
     updateBall()
-    /**碰撞检测**/
-
+    /**砖块碰撞检测**/
+    checkCrash()
   }
   //更新小球的位置
   def updateBall():Unit = {
-    playerMap = playerMap.map{player =>
-
-
-    }
-    massList = massList.map { mass =>
-      val deg = Math.atan2(mass.targetY, mass.targetX)
-      val deltaY = mass.speed * Math.sin(deg)
-      val deltaX = mass.speed * Math.cos(deg)
-
-      var newSpeed = mass.speed
-      var newX = mass.x
-      var newY = mass.y
-      newSpeed -= massSpeedDecayRate
-      if (newSpeed < 0) newSpeed = 0
-      if (!(deltaY).isNaN) newY = (newY + deltaY).toShort
-      if (!(deltaX).isNaN) newX = (newX + deltaX).toShort
-
-      // val borderCalc = mass.radius.ceil.toInt
-
-      val borderCalc = 0
-      if (newX > boundary.x - borderCalc) newX = (boundary.x - borderCalc).toShort
-      if (newY > boundary.y - borderCalc) newY = (boundary.y - borderCalc).toShort
-      if (newX < borderCalc) newX = borderCalc.toShort
-      if (newY < borderCalc) newY = borderCalc.toShort
-
-      mass.copy(x = newX, y = newY, speed = newSpeed)
+    playerMap = playerMap.map{ player =>
+      val ball = player._2.ball
+      var newX = (ball.x + ball.speedX).toInt
+      var newY = (ball.y + ball.speedY).toInt
+      /**边界碰撞检测**/
+      if(newX > window.x/2 + boundary.x/2 - ball.radius) newX = boundary.x/2 + window.x/2 - ball.radius
+      if(newX < window.x/2 - boundary.x/2 + ball.radius) newX = window.x/2 - boundary.x/2 + ball.radius
+      if(newY < window.y/2 - boundary.y/2 + ball.radius) newY = window.y/2 - boundary.y/2 + ball.radius
+      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY))
     }
   }
 
@@ -143,10 +130,19 @@ trait Grid {
   }
   private[this] def updatePlayerMove(player: Player, mouseActMap: Map[String, MP]) = {
     val mouseAct = mouseActMap.getOrElse(player.id,MP(None,player.targetX,0,0,0))
-    var newX = player.x + player.
-
+//    val deg = atan2(player.targetY - initHeight /2, player.targetX - player.x)
+//    val degX = if(cos(deg).isNaN) 0 else cos(deg)
+    //鼠标始终在木板的中间
+    var newX = player.x + player.speedX
+    if(newX > window.x/2 + boundary.x/2 - initWidth/2 ) newX = window.x/2 + boundary.x/2 - initWidth/2
+    if(newX < window.x/2 - boundary.x/2 + initWidth/2 ) newX = window.x/2 - boundary.x/2 + initWidth/2
+    player.copy(x = newX.toInt, targetX = mouseAct.cX, targetY = mouseAct.cY)
   }
 
+  def checkCrash()= {
+    //检查小球和砖块碰撞
+
+  }
 
 
 

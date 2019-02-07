@@ -9,7 +9,7 @@ import com.neo.sk.breakout.shared.ptcl.Game._
   * create by zhaoyin
   * 2019/2/2  11:23 AM
   */
-class GameClient extends Grid{
+class GameClient(override val boundary: Point,override val window: Point) extends Grid{
 
   override def debug(msg: String): Unit = println(msg)
 

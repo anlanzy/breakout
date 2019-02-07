@@ -19,6 +19,7 @@ import com.neo.sk.breakout.shared.ptcl.Protocol._
 class GameHolder {
 
   val bounds = Point(Boundary.w, Boundary.h)
+  var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
   private[this] val canvas1 = dom.document.getElementById("GameView").asInstanceOf[Canvas]
   private[this] val ctx = canvas1.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val canvas2 = dom.document.getElementById("TopView").asInstanceOf[Canvas]
