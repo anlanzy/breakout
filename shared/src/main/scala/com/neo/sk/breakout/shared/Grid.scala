@@ -7,6 +7,7 @@ import scala.util.Random
 import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
+import com.neo.sk.breakout.shared.util.utils._
 /**
   * User: Taoz
   * Date: 9/1/2016
@@ -103,7 +104,7 @@ trait Grid {
     updatePlayer()
     /**更新小球的位置**/
     updateBall()
-    /**砖块碰撞检测**/
+    /**碰撞检测**/
     checkCrash()
   }
   //更新小球的位置
@@ -140,9 +141,74 @@ trait Grid {
   }
 
   def checkCrash()= {
-    //检查小球和砖块碰撞
-
+    checkBallBrickCrash()
+    checkBallBoundaryCrash()
+    checkBallPlayerCrash()
   }
+  //检查小球和砖块碰撞
+  def checkBallBrickCrash() = {
+    val newPlayerMap = playerMap.values.map{
+      player =>
+        val ball = player.ball
+        var newspeedX = ball.speedX
+        var newspeedY = ball.speedY
+        brickMap.foreach{
+          brick =>
+            checkCollision(Point(ball.x,ball.y),brick._1) match {
+              case 1=>
+                //x方向转向，砖块消失，用户得分
+                brickMap -= brick._1
+                newspeedX = - newspeedX
+              case 2=>
+                //y方向转向
+                brickMap -= brick._1
+                newspeedY = - newspeedY
+              case x=>
+            }
+
+        }
+        player.copy(ball = ball.copy(speedX = newspeedX, speedY = newspeedY))
+    }
+    playerMap = newPlayerMap.map(s=>(s.id, s)).toMap
+  }
+
+  //检查小球和边界碰撞
+  def checkBallBoundaryCrash() = {
+    val newPlayerMap = playerMap.values.map{
+      player =>
+        val ball = player.ball
+        var newspeedX = ball.speedX
+        var newspeedY = ball.speedY
+        checkTouchBoundary(Point(ball.x,ball.y),boundary,window) match{
+          case 1=>
+            newspeedX = - newspeedX
+          case 2=>
+            newspeedY = - newspeedY
+          case _=>
+        }
+        player.copy(ball = ball.copy(speedX = newspeedX, speedY = newspeedY))
+    }
+    playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
+  }
+
+  //检查小球和木板碰撞
+  def checkBallPlayerCrash() = {
+    val newPlayerMap = playerMap.values.map{
+      player =>
+        val ball = player.ball
+        var newspeedY= ball.speedY
+        var ballY = ball.y
+        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x,window.y/2 + boundary.y/2)) match{
+          case 1=>
+            newspeedY = - newspeedY
+            ballY = window.y/2 + boundary.y/2 + initHeight + initBallRadius
+          case _=>
+        }
+        player.copy(ball = ball.copy(y = ballY, speedY = newspeedY))
+    }
+    playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
+  }
+
 
 
 

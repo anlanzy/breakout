@@ -26,6 +26,14 @@ class GameClient(override val boundary: Point,override val window: Point) extend
     brickMap = data.brickDetails.map(b => Point(b.x,b.y) -> b.color).toMap
   }
 
+  def getGridData() = {
+    Protocol.GridDataSync(
+      frameCount,
+      playerMap.values.toList,
+      brickMap.map(i=>Brick(i._1.x,i._1.y,i._2)).toList
+    )
+  }
+
 
 
 

@@ -48,7 +48,7 @@ class GameHolder {
   val webSocketClient = WebSocketClient(wsConnectSuccess,wsConnectError,wsMessageHandler,wsConnectClose)
 
   /**前端为每一个玩家有一个对应的grid**/
-  val grid = new GameClient
+  val grid = new GameClient(bounds,window)
 
   def getActionSerialNum=actionSerialNumGenerator.getAndIncrement()
 
@@ -70,6 +70,7 @@ class GameHolder {
     start()
     addActionListenEvent
   }
+
   def start(): Unit = {
     println("start---")
     /**
@@ -115,7 +116,14 @@ class GameHolder {
 
   def draw(offsetTime:Long) = {
     if (webSocketClient.getWsState){
-
+      val data = grid.getGridData()
+      data.playerDetails.find(_.id == grid.myId) match {
+        case Some(p)=>
+          drawGameView.drawGrid(grid.myId,data,offsetTime,bounds,window)
+          //TODO 显示用户得分
+        case None =>
+          drawGameView.drawGameWait(grid.myId)
+      }
     }else{
       drawGameView.drawGameLost
     }
@@ -164,6 +172,7 @@ class GameHolder {
     println(s"连接服务器成功")
     e
   }
+
   private def wsConnectError(e:ErrorEvent) = {
     val playground = dom.document.getElementById("playground")
     println("----wsConnectError")
@@ -171,11 +180,13 @@ class GameHolder {
     playground.insertBefore(paraGraph(s"Failed: code: ${e.colno}"), playground.firstChild)
     e
   }
+
   def paraGraph(msg: String) = {
     val paragraph = dom.document.createElement("p")
     paragraph.innerHTML = msg
     paragraph
   }
+
   private def wsConnectClose(e:Event) = {
     println("last Ws close")
     e
