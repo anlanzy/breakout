@@ -26,8 +26,8 @@ class GameHolder {
   private[this] val ctx2 = canvas2.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val offScreenCanvas = dom.document.getElementById("OffScreen").asInstanceOf[Canvas]
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  private[this] val drawGameView=DrawGame(ctx,canvas1,bounds)
-  private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds)
+  private[this] val drawGameView=DrawGame(ctx,canvas1,bounds,window)
+  private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds,window)
 
 
   /**状态值**/

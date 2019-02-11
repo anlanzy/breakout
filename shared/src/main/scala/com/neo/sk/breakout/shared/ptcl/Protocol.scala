@@ -21,10 +21,6 @@ object Protocol {
 
   case class ErrorWsMsgFront(msg:String) extends GameMessage
   final case object RebuildWebSocket extends GameMessage
-  case class DecodeEvent(data:SyncGameAllState) extends GameMessage
-  case class DecodeEvents(data:EventData) extends GameMessage
-  case class DecodeEventError(data:DecodeError) extends GameMessage
-  case class ReplayFrameData(ws:Array[Byte]) extends GameMessage
 
   case class PlayerIdBytes(playerIdByteMap: Map[String, Byte]) extends GameMessage
 

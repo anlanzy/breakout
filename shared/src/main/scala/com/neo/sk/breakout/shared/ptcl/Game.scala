@@ -18,6 +18,11 @@ object Game {
 
     def %(other: Point) = Point(x % other.x, y % other.y)
   }
+  case class Score(id:String,n:String,k: Short, score: Short)
+  case class RankInfo(
+                     index:Int, //排名
+                     score: Score //分数
+                     )
 
   case class Player(
                      id:String,

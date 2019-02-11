@@ -15,38 +15,39 @@ import com.neo.sk.breakout.shared.ptcl.GameConfig._
 case class DrawGame(
                      ctx:CanvasRenderingContext2D,
                      canvas:Canvas,
-                     size:Point
+                     bounds:Point,
+                     window:Point
                    ) {
 
   //欢迎文字
   def drawGameWelcome: Unit = {
-    ctx.fillStyle = Color.White.toString()
-    ctx.fillRect(0, 0, this.canvas.width , this.canvas.height )
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
     ctx.font = "36px Helvetica"
-    ctx.fillText("Welcome.", 150, 180)
+    val welcome = "Welcome."
+    val welcomeWidth = ctx.measureText(welcome).width
+    ctx.fillText(welcome, window.x/2-welcomeWidth/2 ,window.y/2-bounds.y/2 - 50)
   }
   //等待文字
   def drawGameWait(myId:String) ={
-    ctx.fillStyle = Color.White.toString()
-    ctx.fillRect(0, 0, this.canvas.width , this.canvas.height )
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
     ctx.font = "36px Helvetica"
-    ctx.fillText("Please wait.", 350, 180)
+    val wait = "Please wait."
+    val waitWidth = ctx.measureText(wait).width
+    ctx.fillText(wait, window.x/2-waitWidth/2, window.y/2-bounds.y/2 - 50)
   }
   //离线提示文字
   def drawGameLost: Unit = {
-    ctx.fillStyle = Color.White.toString()
-    ctx.fillRect(0, 0, this.canvas.width , this.canvas.height )
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
     ctx.font = "36px Helvetica"
-    ctx.fillText("Ops, connection lost....", 350, 250)
+    val lost = "Ops, connection lost...."
+    val lostWidth = ctx.measureText(lost).width
+    ctx.fillText(lost, window.x/2-lostWidth/2, window.y/2-bounds.y/2 - 50)
   }
 
   def drawBackground: Unit = {
     /**背景色**/
     ctx.fillStyle = "rgba(34, 34, 34, 1)"
-    ctx.fillRect(0, 0, this.canvas.width , this.canvas.height )
+    ctx.fillRect(window.x/2-bounds.x/2, window.y/2-bounds.y/2, bounds.x, bounds.x )
     /**顶部的砖块**/
 
   }

@@ -26,6 +26,7 @@ class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page 
     Shortcut.scheduleOnce(() =>init(),0)
     <div>
       {gameView}
+      {topView}
       {offScreen}
     </div>
   }
