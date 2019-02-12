@@ -1,23 +1,21 @@
 package com.neo.sk.breakout.core
 
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.stream.OverflowStrategy
 import org.slf4j.LoggerFactory
 import akka.stream.scaladsl.Flow
 import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
-import akka.actor.typed.{ActorRef, Behavior}
-import com.neo.sk.breakout.core.UserActor.StartGame
-import com.neo.sk.breakout.shared.ptcl.Protocol
-import org.slf4j.LoggerFactory
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
-import scala.language.implicitConversions
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
+import scala.language.implicitConversions
+
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.Boot.roomManager
+import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.core.UserActor.StartGame
 
 
 /**
