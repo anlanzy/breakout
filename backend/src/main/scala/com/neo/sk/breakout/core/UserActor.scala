@@ -58,6 +58,8 @@ object UserActor {
 
   case class UserLeft[U](actorRef: ActorRef[U]) extends Command
 
+  case object CreateRoom extends Command
+
   case class JoinRoomSuccess(roomId:Long, roomActor: ActorRef[RoomActor.Command]) extends Command with RoomManager.Command
 
   case class Left(playerInfo: BaseUserInfo) extends Command with RoomActor.Command

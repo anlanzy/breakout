@@ -44,8 +44,6 @@ trait Grid {
   var ballOnBoard = true
 
 
-
-
   //用户离开，从列表中去掉
   def removePlayer(id: String): Option[Player] = {
     val r = playerMap.get(id)
@@ -110,6 +108,12 @@ trait Grid {
   //更新小球的位置
   def updateBall():Unit = {
     playerMap = playerMap.map{ player =>
+      //小球从木板中弹出
+      val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MP]).get(player._2.id)
+      if(mouseAct.isDefined){
+        //
+
+      }
       val ball = player._2.ball
       var newX = (ball.x + ball.speedX).toInt
       var newY = (ball.y + ball.speedY).toInt
