@@ -23,6 +23,10 @@ object RoomActor {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
+  val bounds = Point(Boundary.w, Boundary.h)
+
+  val window = Point(Boundary.w, Boundary.h) //没有用到
+
   trait Command
 
   private case object SyncTimeKey
@@ -41,7 +45,7 @@ object RoomActor {
           val subscribersMap = mutable.HashMap[String,ActorRef[UserActor.Command]]()
           val playerMap = mutable.HashMap[String,String]()
           /**每个房间都有一个自己的gird**/
-          val grid = new GameServer
+          val grid = new GameServer(bounds,window)
           grid.setRoomId(roomId)
 
           /**后台的逻辑帧**/

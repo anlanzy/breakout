@@ -4,12 +4,14 @@ import java.util.concurrent.TimeUnit
 import com.typesafe.config.{Config, ConfigFactory}
 import org.slf4j.LoggerFactory
 import com.neo.sk.breakout.utils.SessionSupport.SessionConfig
+import collection.JavaConverters._
 
 /**
   * create by zhaoyin
   * 2019/1/31  9:52 PM
   */
 object AppSettings {
+
   private implicit class RichConfig(config: Config) {
     val noneValue = "none"
 
@@ -35,6 +37,14 @@ object AppSettings {
   val httpPort = appConfig.getInt("http.port")
 
   val projectVersion = appConfig.getString("projectVersion")
+  val slickConfig = config.getConfig("slick.db")
+  val slickUrl = slickConfig.getString("url")
+  val slickUser = slickConfig.getString("user")
+  val slickPassword = slickConfig.getString("password")
+  val slickMaximumPoolSize = slickConfig.getInt("maximumPoolSize")
+  val slickConnectTimeout = slickConfig.getInt("connectTimeout")
+  val slickIdleTimeout = slickConfig.getInt("idleTimeout")
+  val slickMaxLifetime = slickConfig.getInt("maxLifetime")
 
   val sConf = config.getConfig("session")
   val sessionConfig = {
@@ -54,6 +64,20 @@ object AppSettings {
   val gameConfig=config.getConfig("game")
   val limitCount=gameConfig.getInt("limitCount")
   val SyncCount = gameConfig.getInt("SyncCount")
+  val appSecureMap = {
+    val appIds = appConfig.getStringList("client.appIds").asScala
+    val secureKeys = appConfig.getStringList("client.secureKeys").asScala
+    require(appIds.length == secureKeys.length, "appIdList.length and secureKeys.length not equel.")
+    appIds.zip(secureKeys).toMap
+  }
+  val hestiaConfig = config.getConfig("hestia")
+  val hestiaProtocol = hestiaConfig.getString("protocol")
+  val hestiaHost = hestiaConfig.getString("host")
+  val hestiaPort = hestiaConfig.getString("port")
+  val hestiaDomain = hestiaConfig.getString("domain")
+  val hestiaAppId = hestiaConfig.getString("appId")
+  val hestiaSecureKey = hestiaConfig.getString("secureKey")
+  val hestiaAddress = hestiaConfig.getString("address")
 
 
 

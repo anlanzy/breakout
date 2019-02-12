@@ -9,7 +9,7 @@ import org.scalajs.dom.html.Document
 object Routes {
 
   object ApiRoute{
-    private val baseUrl = "/breakout/api"
+    private val baseUrl = "/breakout/user"
 
     private def playGame(playerId:String,
                          playerName:String,

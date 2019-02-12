@@ -12,12 +12,13 @@ import com.neo.sk.breakout.shared.ptcl.Protocol
 import org.slf4j.LoggerFactory
 import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
-
+import scala.language.implicitConversions
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.Boot.roomManager
+
 
 /**
   * create by zhaoyin
@@ -30,7 +31,6 @@ object UserActor {
   private final val InitTime = Some(5.minutes)
 
   private final case object BehaviorChangeKey
-
 
   trait Command
 
@@ -99,9 +99,6 @@ object UserActor {
 
           case Ping(timestamp)=>
             NetTest(id,timestamp)
-
-//          case ReLiveMsg(frame) =>
-//            UserReLiveMsg(frame)
 
           case Protocol.CreateRoom =>
             CreateRoom

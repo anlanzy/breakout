@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import scala.concurrent.ExecutionContextExecutor
-
+import com.neo.sk.breakout.common.AppSettings
 
 /**
   * create by zhaoyin

@@ -40,7 +40,7 @@ object SessionBase{
         SessionTypeKey -> SessionKeys.sessionType,
         SessionKeys.userType -> userInfo.userType,
         SessionKeys.userId -> userInfo.userId.toString,
-        SessionKeys.name -> userInfo.name,
+        SessionKeys.name -> userInfo.userName,
         SessionKeys.timestamp -> time.toString
       )
     }

@@ -3,6 +3,7 @@ package com.neo.sk.breakout.utils
 import com.zaxxer.hikari.HikariDataSource
 import org.slf4j.LoggerFactory
 import slick.jdbc.PostgresProfile.api._
+import com.neo.sk.breakout.common.AppSettings._
 
 /**
  * User: Taoz

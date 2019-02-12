@@ -64,7 +64,7 @@ object RoomManager {
               var roomId = roomIdGenerator.getAndIncrement()
               while(roomInUse.exists(_._1 == roomId))roomId = roomIdGenerator.getAndIncrement()
               roomInUse.put(roomId,List(playerInfo.userId))
-              getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,roomId,userActor)
+              getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
             }
             log.debug(s"now roomInUse:$roomInUse")
             Behaviors.same

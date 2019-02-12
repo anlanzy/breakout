@@ -40,7 +40,7 @@ object UserManager {
   private def idle()(
     implicit timer: TimerScheduler[Command]
   ):Behavior[Command] = {
-    Behaviors.receive[Command]{(ctx, msg) =>z
+    Behaviors.receive[Command]{(ctx, msg) =>
       msg match {
         case GetWebSocketFlow(playerInfoOpt,roomIdOpt,replyTo) =>
           val playerInfo = playerInfoOpt.get
@@ -97,79 +97,6 @@ object UserManager {
       .via(UserActor.flow(playerInfo.userId,playerInfo.userName,userActor))
       .map{
         case t:Protocol.Wrap =>
-          val b = ByteString(t.ws)
-          val buffer = new MiddleBufferInJvm(b.asByteBuffer)
-          val msg = bytesDecode[Protocol.GameMessage](buffer) match{
-            case Right(req) =>
-              val sendBuffer = new MiddleBufferInJvm(409600)
-              val a = req.fillMiddleBuffer(sendBuffer).result()
-              req match{
-                case m:GridDataSync=>
-                  sync = sync + a.length
-                case m:FeedApples=>
-                  food = food + a.length
-                case m:Id =>
-                  connect = connect + a.length
-                case m:PlayerJoin =>
-                  connect = connect + a.length
-                case m:Ranks =>
-                  rank = rank + a.length
-                case m:MyRank =>
-                  rank = rank + a.length
-                case m:UserMerge=>
-                  merge = merge + a.length
-                case m:UserCrash=>
-                  crash = crash + a.length
-                case m:Pong =>
-                  ping = ping + a.length
-                case m:MP =>
-                  mouse = mouse + a.length
-                case m:KC=>
-                  key = key + a.length
-                case m:AddVirus=>
-                  virus = virus + a.length
-                case m:PlayerSplit=>
-                  split = split + a.length
-                case x =>
-                  other = other + a.length
-
-              }
-              if(System.currentTimeMillis() - timer > period){
-                timer = System.currentTimeMillis()
-                val total =  sync + food + connect + rank + merge +crash +virus + ping + mouse + key + other
-
-                log.info(s"STATISTICS:" +
-                  s"TOTAL:$total" +
-                  s"SYNC:$sync" +
-                  s"FOOD:$food" +
-                  s"VIRUS:$virus" +
-                  s"MOUSE:$mouse" +
-                  s"KEY:$key" +
-                  s"CONNECT:$connect" +
-                  s"PING:$ping" +
-                  s"RANK:$rank" +
-                  s"MERGE:$merge" +
-                  s"CRASH:$crash" +
-                  s"SPLIT:$split" +
-                  s"OTHER:$other")
-                sync = 0.0
-                food = 0.0
-                connect = 0.0
-                rank = 0.0
-                merge = 0.0
-                crash = 0.0
-                virus = 0.0
-                ping = 0.0
-                mouse = 0.0
-                key = 0.0
-                split = 0.0
-                other = 0.0
-              }
-
-            case Left(e) =>
-          }
-          BinaryMessage.Strict(ByteString(t.ws))
-        case t: Protocol.ReplayFrameData =>
           BinaryMessage.Strict(ByteString(t.ws))
         case x =>
           log.debug(s"akka stream receive unknown msg=${x}")
