@@ -54,6 +54,8 @@ object UserActor {
 
   case class Mouse(clientX:Short,clientY:Short,frame:Int,n:Int) extends Command with RoomActor.Command
 
+  case class MouseClick(clientX:Short,clientY:Short,frame:Int,n:Int) extends Command with RoomActor.Command
+
   case class NetTest(id: String, createTime: Long) extends Command with RoomActor.Command
 
   case class UserLeft[U](actorRef: ActorRef[U]) extends Command
@@ -96,6 +98,9 @@ object UserActor {
 
           case MP(_,clientX,clientY,f,n)=>
             Mouse(clientX,clientY,f,n)
+
+          case MC(_,clientX,clientY,f,n)=>
+            MouseClick(clientX,clientY,f,n)
 
           case Ping(timestamp)=>
             NetTest(id,timestamp)
@@ -216,12 +221,28 @@ object UserActor {
                   ): Behavior[Command] =
     Behaviors.receive[Command]{ (ctx, msg) =>
       msg match {
+        case Key(keyCode,frame,n) =>
+          roomActor ! RoomActor.KeyR(userInfo.userId, keyCode,frame,n)
+          Behaviors.same
+        case Mouse(x,y,frame,n) =>
+          log.debug(s"gor $msg")
+          roomActor ! RoomActor.MouseR(userInfo.userId,x,y,frame,n)
+          Behaviors.same
+
+        case MouseClick(x,y,frame,n) =>
+          log.debug(s"gor $msg")
+          roomActor ! RoomActor.MouseRClick(userInfo.userId,x,y,frame,n)
+          Behaviors.same
 
         case ChangeBehaviorToInit=>
           frontActor ! Protocol.Wrap(Protocol.RebuildWebSocket.asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
           roomManager ! RoomManager.LeftRoom(userInfo)
           ctx.unwatch(frontActor) //这句是必须的，将不会受到UserLeft消息
           switchBehavior(ctx,"init",init(userInfo),InitTime,TimeOut("init"))
+
+        case DispatchMsg(m)=>
+          frontActor ! m
+          Behaviors.same
 
         case UserLeft(actor) =>
           ctx.unwatch(actor)

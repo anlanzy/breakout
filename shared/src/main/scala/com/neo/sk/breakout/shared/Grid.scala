@@ -39,7 +39,7 @@ trait Grid {
   var mouseActionMap = Map.empty[Int, Map[String, MP]]
 
   //小球的鼠标事件 帧数->(用户ID -> 操作)
-  var ballMouseActionMap = Map.empty[Int, Map[String, MP]]
+  var ballMouseActionMap = Map.empty[Int, Map[String, MC]]
 
   var ballOnBoard = true
 
@@ -65,10 +65,10 @@ trait Grid {
     mouseActionMap += (mp.f -> tmp)
   }
 
-  def addBallMouseActionWithFrame(id:String, mp:MP) = {
-    val map = mouseActionMap.getOrElse(mp.f, Map.empty)
-    val tmp = map + (id -> mp)
-    ballMouseActionMap += (mp.f -> tmp)
+  def addBallMouseActionWithFrame(id:String, mc:MC) = {
+    val map = ballMouseActionMap.getOrElse(mc.f, Map.empty)
+    val tmc = map + (id -> mc)
+    ballMouseActionMap += (mc.f -> tmc)
   }
 
   def removeActionWithFrame(id: String, userAction: UserAction, frame: Int) = {
@@ -109,10 +109,9 @@ trait Grid {
   def updateBall():Unit = {
     playerMap = playerMap.map{ player =>
       //小球从木板中弹出
-      val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MP]).get(player._2.id)
+      val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MC]).get(player._2.id)
       if(mouseAct.isDefined){
         //
-
       }
       val ball = player._2.ball
       var newX = (ball.x + ball.speedX).toInt

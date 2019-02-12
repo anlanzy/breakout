@@ -44,7 +44,8 @@ class GameHolder {
   private[this] var syncGridData: scala.Option[GridDataSync] = None
   private[this] val actionSerialNumGenerator = new AtomicInteger(0)
   var mp = MP(None,0,0,0,0)
-//  var fmp = MP(None,0,0,0,0)
+  var mc = MC(None,0,0,0,0)
+  //  var fmp = MP(None,0,0,0,0)
   val webSocketClient = WebSocketClient(wsConnectSuccess,wsConnectError,wsMessageHandler,wsConnectClose)
 
   /**前端为每一个玩家有一个对应的grid**/
@@ -135,8 +136,8 @@ class GameHolder {
       //球在木板上时选择方向发射
       if(grid.ballOnBoard){
         val ballStart = Protocol.BallStart(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
-        mp = MP(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
-        grid.addBallMouseActionWithFrame(grid.myId, mp)
+        mc = MC(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+        grid.addBallMouseActionWithFrame(grid.myId, mc)
         webSocketClient.sendMsg(ballStart)
         grid.ballOnBoard = false
       }
@@ -160,6 +161,35 @@ class GameHolder {
             grid.addActionWithFrame(mid,m)
           }
         }
+        //目的：接受其他玩家的动作
+      case m: Protocol.MP =>
+        if(m.id.isDefined){
+          val mid = m.id.get
+          if(!grid.myId.equals(mid)){
+            grid.addMouseActionWithFrame(mid,m)
+          }
+        }
+
+      case m:Protocol.MC =>
+        if(m.id.isDefined){
+          val mid = m.id.get
+          if(!grid.myId.equals(mid)){
+            grid.addBallMouseActionWithFrame(mid,m)
+          }
+        }
+
+      case data:Protocol.GridDataSync =>
+        println("获取全量数据  get ALL GRID===================")
+        syncGridData = Some(data)
+        justSynced = true
+
+      //网络延迟检测
+      case Protocol.Pong(createTime) =>
+        NetDelay.receivePong(createTime ,webSocketClient)
+
+      case Protocol.PlayerJoin(id, player) =>
+        println(s"${player.id}  加入游戏 ${grid.frameCount} MYID:${grid.myId} ")
+
 
       case msg@_ =>
         println(s"unknown $msg")

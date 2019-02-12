@@ -15,6 +15,7 @@ import com.neo.sk.breakout.ptcl.UserProtocol.BaseUserInfo
 import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.shared.ptcl.Protocol._
 /**
   * create by zhaoyin
   * 2019/2/1  5:35 PM
@@ -35,6 +36,11 @@ object RoomActor {
 
   case class JoinRoom(playerInfo: BaseUserInfo, userActor:ActorRef[UserActor.Command]) extends Command
 
+  case class KeyR(id:String, keyCode: Int,frame:Int,n:Int) extends Command
+
+  case class MouseR(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
+
+  case class MouseRClick(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
 
   def create(roomId:Long):Behavior[Command] = {
     log.debug(s"RoomActor-$roomId start...")
@@ -81,6 +87,27 @@ object RoomActor {
           grid.removePlayer(playerInfo.userId)
           playerMap.remove(playerInfo.userId)
           subscribersMap.remove(playerInfo.userId)
+          Behaviors.same
+
+        case  RoomActor.KeyR(id, keyCode,frame,n) =>
+          if(grid.playerMap.get(id).isDefined){
+            grid.addActionWithFrame(id, KC(Some(id),keyCode,math.max(grid.frameCount,frame),n))
+            dispatch(subscribersMap)(KC(Some(id),keyCode,math.max(grid.frameCount,frame),n))
+          }
+          Behaviors.same
+
+        case RoomActor.MouseR(id,x,y,frame,n) =>
+          if(grid.playerMap.get(id).isDefined){
+            grid.addMouseActionWithFrame(id,MP(Some(id),x,y,math.max(grid.frameCount,frame),n))
+            dispatch(subscribersMap)(MP(Some(id),x,y,math.max(grid.frameCount,frame),n))
+          }
+          Behaviors.same
+
+        case RoomActor.MouseRClick(id,x,y,frame,n) =>
+          if(grid.playerMap.get(id).isDefined){
+            grid.addBallMouseActionWithFrame(id,MC(Some(id),x,y,math.max(grid.frameCount,frame),n))
+            dispatch(subscribersMap)(MC(Some(id),x,y,math.max(grid.frameCount,frame),n))
+          }
           Behaviors.same
 
         case Sync =>

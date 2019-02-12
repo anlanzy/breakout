@@ -11,14 +11,14 @@ import akka.stream.{ActorAttributes, ActorMaterializer, Materializer, Supervisio
 import akka.util.{ByteString, Timeout}
 import akka.actor.typed.scaladsl.AskPattern._
 import org.slf4j.LoggerFactory
-
+import io.circe.generic.auto._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.neo.sk.breakout.http.SessionBase.BreakoutSession
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.common.Constant._
 import com.neo.sk.breakout.core.UserManager
 import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
-
+import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
 /**
   * create by zhaoyin
   * 2019/2/1  5:11 PM
@@ -37,11 +37,11 @@ trait UserService extends ServiceUtils with SessionBase {
 
   private[this] val log = LoggerFactory.getLogger(getClass)
 
-  private def playGame = (path("playGame") & get & pathEndOrSingleSlash){
+  private def playGame = (path("playGame") & get){
     parameter(
       'playerId.as[String],
       'playerName.as[String],
-      'playType.as[Byte],
+      'playerType.as[Byte],
       'roomId.as[Long].?
     ){case ( playerId, playerName, playType, roomIdOpt) =>
       //TODO 1、不应该在这里才建立session的 2、根据playerType来选择玩家类型（会员or游客）

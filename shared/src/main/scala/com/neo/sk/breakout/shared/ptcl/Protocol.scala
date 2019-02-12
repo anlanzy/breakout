@@ -89,7 +89,9 @@ object Protocol {
 
   //MP -> MousePosition;  cX -> clientX;  cY -> clientY; sN -> serialNum; f -> frame
   //  case class MousePosition(id: Option[String],clientX:Short,clientY:Short, override val frame:Int, override val serialNum:Int) extends UserAction with GameMessage
-  case class MP(id: Option[Byte],cX:Short,cY:Short, override val f:Int, override val sN:Int) extends UserAction with GameMessage
+  case class MP(id: Option[String],cX:Short,cY:Short, override val f:Int, override val sN:Int) extends UserAction with GameMessage
+  //玩家点击鼠标让小球移动
+  case class MC(id: Option[String],cX:Short,cY:Short, override val f:Int, override val sN:Int) extends UserAction with GameMessage
 
   //KC -> KeyCode; kC -> keyCode
   //  case class KeyCode(id: Option[String],keyCode: Int, override val frame:Int,override val serialNum:Int) extends UserAction with GameMessage

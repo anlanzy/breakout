@@ -33,6 +33,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   implicit val sendBuffer = new MiddleBufferInJvm(81920)
 
 
+  /**产生关卡**/
+  generateGC()
+
   def setRoomId(id:Long)={
     roomId = id
   }
@@ -65,6 +68,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       case x =>
         //TODO 其他关卡，待开发
     }
+    gameCheckPoint += 1
   }
 
   //生成玩家

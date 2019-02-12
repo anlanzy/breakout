@@ -59,35 +59,35 @@ trait ServiceUtils extends CirceSupport {
       complete("error")
   }
 
-  def ensureAuth(
-                  appClientId: String,
-                  timestamp: String,
-                  nonce: String,
-                  sn: String,
-                  data: List[String],
-                  signature: String
-                )(f: => Future[server.Route]): server.Route = {
-    val p = getSecureKey(appClientId) match {
-      case Some(secureKey) =>
-        val paramList = List(appClientId.toString, timestamp, nonce, sn) ::: data
-        if (timestamp.toLong + 120000 < System.currentTimeMillis()) {
-          Future.successful(complete(RequestTimeout))
-        } else if (SecureUtil.checkSignature(paramList, signature, secureKey)) {
-          f
-        } else {
-          Future.successful(complete(SignatureError))
-        }
-      case None =>
-        Future.successful(complete(AppClientIdError))
-    }
-    dealFutureResult(p)
-  }
+//  def ensureAuth(
+//                  appClientId: String,
+//                  timestamp: String,
+//                  nonce: String,
+//                  sn: String,
+//                  data: List[String],
+//                  signature: String
+//                )(f: => Future[server.Route]): server.Route = {
+//    val p = getSecureKey(appClientId) match {
+//      case Some(secureKey) =>
+//        val paramList = List(appClientId.toString, timestamp, nonce, sn) ::: data
+//        if (timestamp.toLong + 120000 < System.currentTimeMillis()) {
+//          Future.successful(complete(RequestTimeout))
+//        } else if (SecureUtil.checkSignature(paramList, signature, secureKey)) {
+//          f
+//        } else {
+//          Future.successful(complete(SignatureError))
+//        }
+//      case None =>
+//        Future.successful(complete(AppClientIdError))
+//    }
+//    dealFutureResult(p)
+//  }
 
-  def ensurePostEnvelope(e: PostEnvelope)(f: => Future[server.Route]) = {
-    ensureAuth(e.appId, e.timestamp, e.nonce, e.sn, List(e.data), e.signature)(f)
-  }
+//  def ensurePostEnvelope(e: PostEnvelope)(f: => Future[server.Route]) = {
+//    ensureAuth(e.appId, e.timestamp, e.nonce, e.sn, List(e.data), e.signature)(f)
+//  }
 
-  private def getSecureKey(appId: String) = AppSettings.appSecureMap.get(appId)
+//  private def getSecureKey(appId: String) = AppSettings.appSecureMap.get(appId)
 
   def dealPostReq[A](f: A => Future[server.Route])(implicit decoder: Decoder[A]): server.Route = {
     entity(as[Either[Error, PostEnvelope]]) {
@@ -117,17 +117,17 @@ trait ServiceUtils extends CirceSupport {
     }
   }
 
-  def dealGetReq(f: => Future[server.Route]): server.Route = {
-    entity(as[Either[Error, PostEnvelope]]) {
-      case Right(envelope) =>
-        ensurePostEnvelope(envelope) {
-          f
-        }
-
-      case Left(e) =>
-        log.error(s"json parse PostEnvelope error: $e")
-        complete(JsonParseError)
-    }
-  }
+//  def dealGetReq(f: => Future[server.Route]): server.Route = {
+//    entity(as[Either[Error, PostEnvelope]]) {
+//      case Right(envelope) =>
+//        ensurePostEnvelope(envelope) {
+//          f
+//        }
+//
+//      case Left(e) =>
+//        log.error(s"json parse PostEnvelope error: $e")
+//        complete(JsonParseError)
+//    }
+//  }
 
 }

@@ -64,12 +64,6 @@ object AppSettings {
   val gameConfig=config.getConfig("game")
   val limitCount=gameConfig.getInt("limitCount")
   val SyncCount = gameConfig.getInt("SyncCount")
-  val appSecureMap = {
-    val appIds = appConfig.getStringList("client.appIds").asScala
-    val secureKeys = appConfig.getStringList("client.secureKeys").asScala
-    require(appIds.length == secureKeys.length, "appIdList.length and secureKeys.length not equel.")
-    appIds.zip(secureKeys).toMap
-  }
   val hestiaConfig = config.getConfig("hestia")
   val hestiaProtocol = hestiaConfig.getString("protocol")
   val hestiaHost = hestiaConfig.getString("host")

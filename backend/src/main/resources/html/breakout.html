@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>breakout</title>
+    <style>
+        #OffScreen{
+            z-index: 1;
+            position:absolute;
+        }
+        #GameView{
+            z-index: 2;
+            position: absolute;
+        }
+        #TopView{
+            z-index: 3;
+            position: absolute;
+        }
+    </style>
 </head>
 <body style="margin: 0px;">
 <script type="text/javascript" src="/breakout/static/jsFile/frontend-fastopt/011"></script>

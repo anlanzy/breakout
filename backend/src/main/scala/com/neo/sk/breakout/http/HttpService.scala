@@ -34,7 +34,7 @@ trait HttpService extends ResourceService with UserService{
       pathPrefix("breakout"){
         pathEndOrSingleSlash{
           getFromResource("html/breakout.html")
-        }~ resourceRoutes ~ userRoutes
+        } ~ resourceRoutes ~ userRoutes
       }
     }
 
