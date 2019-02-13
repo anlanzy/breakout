@@ -12,7 +12,7 @@ import com.neo.sk.breakout.front.utils.Shortcut
 class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page {
 
   private val gameView = <canvas id ="GameView"></canvas>
-  private val topView = <canvas id ="TopView"></canvas>
+  private val infoView = <canvas id ="InfoView"></canvas>
   private val offScreen = <canvas id="OffScreen"></canvas>
 
   def init()={
@@ -24,9 +24,9 @@ class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page 
 
   override def render: Elem = {
     Shortcut.scheduleOnce(() =>init(),0)
-    <div>
+    <div style="width:400px; height:600px">
       {gameView}
-      {topView}
+      {infoView}
       {offScreen}
     </div>
   }

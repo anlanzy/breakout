@@ -61,7 +61,7 @@ object Game {
   }
 
   object Boundary{
-    val w = 300
+    val w = 400
     val h = 600
   }
 

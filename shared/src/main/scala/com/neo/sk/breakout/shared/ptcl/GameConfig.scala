@@ -8,15 +8,15 @@ object GameConfig {
 
   val frameRate = 150  //ms
   //玩家木板初始大小
-  val initWidth = 50
-  val initHeight = 6
+  val initWidth = 80
+  val initHeight = 12
   //玩家小球信息
-  val initBallRadius:Short  = 5
+  val initBallRadius:Short  = 8
   val initBallSpeed = 12
 
   //砖块宽高
-  val brickW = 16
-  val brickH = 8
+  val brickW = 30
+  val brickH = 15
 
   val maxDelayFrame = 3
 

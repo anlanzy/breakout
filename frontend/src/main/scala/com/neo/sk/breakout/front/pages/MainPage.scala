@@ -21,7 +21,8 @@ object MainPage extends PageSwitcher{
   def show():Cancelable= {
     switchPageByHash()
     val page =
-      <div>
+      <div style="width:100%;height:100%;display:flex;justify-content:center;
+  align-items:center;">
         {currentPage}
       </div>
     mount(dom.document.body,page)

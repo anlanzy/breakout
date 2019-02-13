@@ -41,8 +41,6 @@ trait Grid {
   //小球的鼠标事件 帧数->(用户ID -> 操作)
   var ballMouseActionMap = Map.empty[Int, Map[String, MC]]
 
-  var ballOnBoard = true
-
 
   //用户离开，从列表中去掉
   def removePlayer(id: String): Option[Player] = {
@@ -109,18 +107,25 @@ trait Grid {
   def updateBall():Unit = {
     playerMap = playerMap.map{ player =>
       //小球从木板中弹出
-      val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MC]).get(player._2.id)
-      if(mouseAct.isDefined){
-        //
-      }
       val ball = player._2.ball
       var newX = (ball.x + ball.speedX).toInt
       var newY = (ball.y + ball.speedY).toInt
+      var newspeedX = ball.speedX
+      var newspeedY = ball.speedY
+      var newonBoard = ball.onBoard
+      val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MC]).get(player._2.id)
+      if(mouseAct.isDefined){
+        val mouse = mouseAct.get
+        val deg = atan2(mouse.cY - ball.x, mouse.cX-ball.y)
+        newspeedX = (cos(deg) * ball.speed).toFloat
+        newspeedY = (sin(deg) * ball.speed).toFloat
+        newonBoard = false
+      }
       /**边界碰撞检测**/
-      if(newX > window.x/2 + boundary.x/2 - ball.radius) newX = boundary.x/2 + window.x/2 - ball.radius
-      if(newX < window.x/2 - boundary.x/2 + ball.radius) newX = window.x/2 - boundary.x/2 + ball.radius
-      if(newY < window.y/2 - boundary.y/2 + ball.radius) newY = window.y/2 - boundary.y/2 + ball.radius
-      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY))
+      if(newX > boundary.x - ball.radius) newX = boundary.x - ball.radius
+      if(newX < ball.radius) newX = ball.radius
+      if(newY < ball.radius) newY = ball.radius
+      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY,speedX = newspeedX,speedY = newspeedY,onBoard = newonBoard))
     }
   }
 
@@ -138,8 +143,8 @@ trait Grid {
 //    val degX = if(cos(deg).isNaN) 0 else cos(deg)
     //鼠标始终在木板的中间
     var newX = player.x + player.speedX
-    if(newX > window.x/2 + boundary.x/2 - initWidth/2 ) newX = window.x/2 + boundary.x/2 - initWidth/2
-    if(newX < window.x/2 - boundary.x/2 + initWidth/2 ) newX = window.x/2 - boundary.x/2 + initWidth/2
+    if(newX > boundary.x - initWidth/2 ) newX = boundary.x - initWidth/2
+    if(newX < initWidth/2 ) newX = initWidth/2
     player.copy(x = newX.toInt, targetX = mouseAct.cX, targetY = mouseAct.cY)
   }
 

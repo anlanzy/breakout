@@ -20,14 +20,16 @@ class GameHolder {
 
   val bounds = Point(Boundary.w, Boundary.h)
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
-  private[this] val canvas1 = dom.document.getElementById("GameView").asInstanceOf[Canvas]
-  private[this] val ctx = canvas1.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  private[this] val canvas2 = dom.document.getElementById("TopView").asInstanceOf[Canvas]
-  private[this] val ctx2 = canvas2.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private[this] val gameViewCanvas = dom.document.getElementById("GameView").asInstanceOf[Canvas]
+  private[this] val gameCtx = gameViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private[this] val infoViewCanvas = dom.document.getElementById("InfoView").asInstanceOf[Canvas]
+  private[this] val infoViewCtx = infoViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val offScreenCanvas = dom.document.getElementById("OffScreen").asInstanceOf[Canvas]
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-  private[this] val drawGameView=DrawGame(ctx,canvas1,bounds,window)
+  private[this] val drawGameView=DrawGame(gameCtx,gameViewCanvas,bounds,window)
   private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds,window)
+  private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,bounds,window)
+
 
 
   /**状态值**/
@@ -131,18 +133,17 @@ class GameHolder {
   }
 
   def addActionListenEvent = {
-    canvas2.focus()
-    canvas2.onclick = { (e: dom.MouseEvent) =>
+    infoViewCanvas.focus()
+    infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
       //球在木板上时选择方向发射
-      if(grid.ballOnBoard){
+      if(grid.playerMap.get(grid.myId).isDefined && grid.playerMap.get(grid.myId).get.ball.onBoard){
         val ballStart = Protocol.BallStart(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
         mc = MC(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
         grid.addBallMouseActionWithFrame(grid.myId, mc)
         webSocketClient.sendMsg(ballStart)
-        grid.ballOnBoard = false
       }
     }
-    canvas2.onmousemove = { (e: dom.MouseEvent) =>
+    infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
       mp = MP(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
       grid.addMouseActionWithFrame(grid.myId, mp)
       webSocketClient.sendMsg(mp)

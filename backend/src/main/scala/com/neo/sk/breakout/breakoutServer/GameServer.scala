@@ -48,9 +48,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       case 1 =>
         /**第一关：砖块数20，四列，每列五个**/
         for(i <- 0 until 4){
-          val tmpW = 40 + i * 20
+          val tmpW = (i + 1) * brickW * 2
           for(j <- 0 until 5){
-            val tmpH = 40 + j * brickH
+            val tmpH = brickH * 2 + j * brickH
             val p = Point(tmpW, tmpH)
             brickMap += (p -> j.toShort)
           }
@@ -74,9 +74,8 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   //生成玩家
   private[this] def genWaitingStar() = {
     waitingJoin.filterNot(kv => playerMap.contains(kv._1)).foreach{ case (id, name) =>
-      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h))
+      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h - initHeight - initBallRadius))
       playerMap += id -> player
-
       dispatch(subscriber)(PlayerJoin(id,player))
       dispatchTo(subscriber)(id, getAllGridData)
     }

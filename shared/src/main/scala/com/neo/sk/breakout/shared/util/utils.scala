@@ -25,11 +25,11 @@ object utils {
   }
 
   def checkTouchBoundary(ball:Point, boundary: Point,window: Point)={
-    if(ball.x >= window.x/2 + boundary.x/2 - initBallRadius ||
-      ball.x <= window.x/2 - boundary.x/2 + initBallRadius)
+    if(ball.x >= boundary.x - initBallRadius ||
+      ball.x <= initBallRadius)
     //x方向转向
       1
-    else if(ball.y <= window.y/2 - boundary.y/2 + initBallRadius)
+    else if(ball.y <= initBallRadius)
     //x方向转向
       2
     else

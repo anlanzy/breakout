@@ -19,6 +19,9 @@ case class DrawGame(
                      window:Point
                    ) {
 
+  this.canvas.width = bounds.x
+  this.canvas.height = bounds.y
+
   //欢迎文字
   def drawGameWelcome: Unit = {
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
@@ -46,8 +49,8 @@ case class DrawGame(
 
   def drawBackground: Unit = {
     /**背景色**/
-    ctx.fillStyle = "rgba(34, 34, 34, 1)"
-    ctx.fillRect(window.x/2-bounds.x/2, window.y/2-bounds.y/2, bounds.x, bounds.x )
+    ctx.fillStyle = "#e6e7e6"
+    ctx.fillRect(0, 0, bounds.x, bounds.y)
     /**顶部的砖块**/
 
   }
@@ -57,20 +60,20 @@ case class DrawGame(
     val bricks = data.brickDetails
     //绘制木板和小球
     players.foreach{ case Player(id, name, x, targetX, targetY, speedX, width, ball)=>
-      ctx.fillStyle = "#f3456d"
+      ctx.fillStyle = "#323232"
       val ballX = ball.x + ball.speedX*offsetTime.toFloat/frameRate
       val ballY = ball.y + ball.speedY*offsetTime.toFloat/frameRate
-      val xfix = if(ballX > window.x/2+bounds.x/2-initBallRadius) window.x/2+bounds.x/2-initBallRadius else
-      if(ballX < window.x/2-bounds.x/2+initBallRadius) window.x/2-bounds.x/2+initBallRadius else ballX
-      val yfix = if(ballY< window.y/2-bounds.y/2+initBallRadius)  window.y/2-bounds.y/2+initBallRadius else ballY
+      val xfix = if(ballX > bounds.x - initBallRadius) bounds.x-initBallRadius else
+      if(ballX < initBallRadius) initBallRadius else ballX
+      val yfix = if(ballY < initBallRadius)  initBallRadius else ballY
       ctx.beginPath()
-      ctx.arc(xfix,yfix,initBallRadius,0,2*Math.PI)
+      ctx.arc(xfix,yfix, initBallRadius,0,2 * Math.PI)
       ctx.fill()
-      ctx.fillStyle = "#cfe6ff"
-        val playerX = x + speedX * offsetTime.toFloat/frameRate
-        val newplayerX = if(playerX > window.x/2 + bounds.x/2-initWidth/2) window.x/2 + bounds.x/2-initWidth/2 else
-          if(playerX< window.x/2 - bounds.x/2 + initWidth/2) window.x/2 - bounds.x/2 + initWidth/2 else playerX
-        ctx.fillRect(playerX - initWidth/2, window.y/2+bounds.y/2-initHeight,initWidth,initHeight)
+      ctx.fillStyle = "#122772"
+      val playerX = x + speedX * offsetTime.toFloat/frameRate
+      val newplayerX = if(playerX > bounds.x-initWidth/2) bounds.x-initWidth/2 else
+      if(playerX<  initWidth/2) initWidth/2 else playerX
+      ctx.fillRect(newplayerX - initWidth/2, bounds.y-initHeight,initWidth,initHeight)
     }
     //绘制砖块
     bricks.groupBy(_.color).foreach{ a=>
@@ -78,8 +81,8 @@ case class DrawGame(
         case 0 => "#f3456d"
         case 1 => "#f49930"
         case 2  => "#f4d95b"
-        case 3  => "#4cd964"
-        case 4  => "#9fe0f6"
+        case 3  => "#2a9514"
+        case 4  => "#4390d0"
         case 5  => "#bead92"
         case 6  => "#cfe6ff"
         case _  => "#de9dd6"
