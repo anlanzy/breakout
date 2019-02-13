@@ -86,7 +86,6 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   def getAllGridData: Protocol.GridDataSync = {
     var brickDetails: List[Brick] = Nil
     brickMap.foreach(item => brickDetails ::= Brick(item._1.x, item._1.y, item._2))
-//    log.info("brickMap:   "+brickMap)
     Protocol.GridDataSync(
       frameCount,
       playerMap.values.toList,

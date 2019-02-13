@@ -12,11 +12,11 @@ object GameConfig {
   val initHeight = 12
   //玩家小球信息
   val initBallRadius:Short  = 8
-  val initBallSpeed = 15
+  val initBallSpeed = 30
 
   //砖块宽高
   val brickW = 30
-  val brickH = 15
+  val brickH = 20
 
   val maxDelayFrame = 3
 

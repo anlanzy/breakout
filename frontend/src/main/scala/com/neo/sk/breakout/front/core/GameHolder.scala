@@ -139,10 +139,9 @@ class GameHolder {
       if(grid.playerMap.get(grid.myId).isDefined && grid.playerMap.get(grid.myId).get.ball.onBoard){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
         val pageY = e.pageY - (window.y/2 - bounds.y/2)
-        val ballStart = Protocol.BallStart(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
-        mc = MC(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+        mc = MC(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
         grid.addBallMouseActionWithFrame(grid.myId, mc)
-        webSocketClient.sendMsg(ballStart)
+        webSocketClient.sendMsg(mc)
       }
     }
     infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
@@ -188,7 +187,6 @@ class GameHolder {
 
       case data:Protocol.GridDataSync =>
         println("获取全量数据  get ALL GRID===================")
-        println(data)
         syncGridData = Some(data)
         justSynced = true
 

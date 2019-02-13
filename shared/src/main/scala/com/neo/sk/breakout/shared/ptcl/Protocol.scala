@@ -99,8 +99,6 @@ object Protocol {
 
   case object PressSpace extends UserAction
 
-  case class BallStart(id:Option[Byte], cX:Short, cY:Short, override val f:Int, override val sN:Int) extends UserAction
-
   //复活
   case class ReLiveMsg(override val f:Int) extends UserAction with GameMessage
 

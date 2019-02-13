@@ -224,6 +224,7 @@ object UserActor {
         case Key(keyCode,frame,n) =>
           roomActor ! RoomActor.KeyR(userInfo.userId, keyCode,frame,n)
           Behaviors.same
+
         case Mouse(x,y,frame,n) =>
           log.debug(s"gor $msg")
           roomActor ! RoomActor.MouseR(userInfo.userId,x,y,frame,n)

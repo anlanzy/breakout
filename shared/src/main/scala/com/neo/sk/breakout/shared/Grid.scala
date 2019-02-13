@@ -137,12 +137,13 @@ trait Grid {
       updatePlayerMove(player,mouseActMap)
     }
     val mouseAct = mouseActionMap.getOrElse(frameCount, Map.empty[String, MP])
-    playerMap.values.map(updatePlayerMap(_,mouseAct)).map(s=>(s.id,s)).toMap
+    playerMap = playerMap.values.map(updatePlayerMap(_,mouseAct)).map(s=>(s.id,s)).toMap
   }
+
   private[this] def updatePlayerMove(player: Player, mouseActMap: Map[String, MP]) = {
-    val mouseAct = mouseActMap.getOrElse(player.id,MP(None,0,0,0,0))
+    val mouseAct = mouseActMap.get(player.id)
     //鼠标始终在木板的中间，从而来算它的速度
-    var newX = mouseAct.cX
+    var newX = if(mouseAct.isDefined) mouseAct.get.cX else player.x
     if(newX > boundary.x - initWidth/2 ) newX = (boundary.x - initWidth/2).toShort
     if(newX < initWidth/2 ) newX = (initWidth/2).toShort
     val newSpeedX = newX - player.x
@@ -154,6 +155,7 @@ trait Grid {
     checkBallBoundaryCrash()
     checkBallPlayerCrash()
   }
+
   //检查小球和砖块碰撞
   def checkBallBrickCrash() = {
     val newPlayerMap = playerMap.values.map{
@@ -163,33 +165,34 @@ trait Grid {
         var newspeedY = ball.speedY
         var newX = ball.x
         var newY = ball.y
-        brickMap.foreach{
-          brick =>
-            /**   3
-              * 1   2
-              *   4
-              */
-            checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1) match {
-              case 1 =>
-                //x方向转向，砖块消失，用户得分
-                brickMap -= brick._1
-                newspeedX = - newspeedX
-                newX = brick._1.x - brickW/2 - initBallRadius
-              case 2 =>
-                //y方向转向
-                brickMap -= brick._1
-                newspeedX = - newspeedX
-                newX = brick._1.x + brickW/2 + initBallRadius
-              case 3 =>
-                brickMap -= brick._1
-                newspeedY = - newspeedY
-                newY = brick._1.y - brickH/2 - initBallRadius
-              case 4 =>
-                brickMap -= brick._1
-                newspeedY = - newspeedY
-                newY = brick._1.y + brickH/2 + initBallRadius
-              case x=>
-            }
+        val brick = brickMap.toList.sortBy(brick =>(sqrt(pow(brick._1.x - ball.x, 2.0) + pow(brick._1.y - ball.y, 2.0)))).reverse.headOption
+        if(brick.isDefined){
+          //TODO 碰撞算法需要修改
+          /**   3
+            * 1   2
+            *   4
+            */
+          checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick.get._1) match {
+            case 1 =>
+              //x方向转向，砖块消失，用户得分
+              brickMap -= brick.get._1
+              newspeedX = - newspeedX
+              newX = brick.get._1.x - brickW/2 - initBallRadius
+            case 2 =>
+              //y方向转向
+              brickMap -= brick.get._1
+              newspeedX = - newspeedX
+              newX = brick.get._1.x + brickW/2 + initBallRadius
+            case 3 =>
+              brickMap -= brick.get._1
+              newspeedY = - newspeedY
+              newY = brick.get._1.y - brickH/2 - initBallRadius
+            case 4 =>
+              brickMap -= brick.get._1
+              newspeedY = - newspeedY
+              newY = brick.get._1.y + brickH/2 + initBallRadius
+            case x=>
+          }
         }
         player.copy(ball = ball.copy(speedX = newspeedX, speedY = newspeedY))
     }
@@ -227,7 +230,7 @@ trait Grid {
           case 1=>
             newspeedX = newspeedX + ball.speedX
             newspeedY = - newspeedY
-            ballY = boundary.y/2 + initHeight + initBallRadius
+            ballY = boundary.y - initHeight - initBallRadius
           case _=>
         }
         player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))

@@ -28,8 +28,8 @@ object utils {
         case x if(deg > deg1 && deg < deg2) => 3
         case x if(deg > deg2 && deg < deg3) => 1
         case x if(deg >deg3 && deg < deg4) => 4
-        case x if( deg>deg4 && deg < 2*math.Pi) => 2
-        case x if(deg>0 && deg < deg1) => 2
+        case x if(deg>deg4 && deg < 2*math.Pi) => 2
+        case x if(deg > 0 && deg < deg1) => 2
       }
 
     }else 0
