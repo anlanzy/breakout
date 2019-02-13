@@ -137,16 +137,23 @@ class GameHolder {
     infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
       //球在木板上时选择方向发射
       if(grid.playerMap.get(grid.myId).isDefined && grid.playerMap.get(grid.myId).get.ball.onBoard){
-        val ballStart = Protocol.BallStart(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
+        val pageX = e.pageX - (window.x/2 - bounds.x/2)
+        val pageY = e.pageY - (window.y/2 - bounds.y/2)
+        val ballStart = Protocol.BallStart(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
         mc = MC(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
         grid.addBallMouseActionWithFrame(grid.myId, mc)
         webSocketClient.sendMsg(ballStart)
       }
     }
     infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
-      mp = MP(None, e.pageX.toShort, e.pageY.toShort, grid.frameCount, getActionSerialNum)
-      grid.addMouseActionWithFrame(grid.myId, mp)
-      webSocketClient.sendMsg(mp)
+      //球不在木板上的时候可以左右移动
+      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard){
+        val pageX = e.pageX - (window.x/2 - bounds.x/2)
+        val pageY = e.pageY - (window.y/2 - bounds.y/2)
+        mp = MP(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
+        grid.addMouseActionWithFrame(grid.myId, mp)
+        webSocketClient.sendMsg(mp)
+      }
     }
   }
 
@@ -181,6 +188,7 @@ class GameHolder {
 
       case data:Protocol.GridDataSync =>
         println("获取全量数据  get ALL GRID===================")
+        println(data)
         syncGridData = Some(data)
         justSynced = true
 

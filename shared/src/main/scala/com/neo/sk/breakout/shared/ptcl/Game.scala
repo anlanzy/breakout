@@ -28,8 +28,8 @@ object Game {
                      id:String,
                      name:String,
                      x:Int,
-                     targetX:Short = 0,
-                     targetY:Short = 0,
+//                     targetX:Int = 0,
+//                     targetY:Int = 0,
                      speedX:Float = 0,
                      width:Double =  initWidth,
                      ball: Ball
@@ -38,11 +38,13 @@ object Game {
   case class Ball(
                    x:Int,
                    y:Int,
+                   beforeX:Int,
+                   beforeY:Int,
                    radius:Short = initBallRadius,
-                   speed:Float = initBallSpeed,//TODO 存疑？
+//                   speed:Float = initBallSpeed,//TODO 存疑？
                    speedX:Float = 0,
                    speedY:Float = 0,
-                   touchBorder : Boolean = false,//TODO 是否触碰边界
+//                   touchBorder : Boolean = false,//TODO 是否触碰边界
                    onBoard:Boolean = true //TODO 在木板上 是否需要该参数
                  )
 

@@ -87,7 +87,6 @@ trait Grid {
 
   def update() = {
     updateSpots()
-//    updatePlayer()
     actionMap -= frameCount
     mouseActionMap -= frameCount
     ballMouseActionMap -= frameCount
@@ -104,10 +103,12 @@ trait Grid {
     checkCrash()
   }
   //更新小球的位置
-  def updateBall():Unit = {
+  def updateBall() = {
     playerMap = playerMap.map{ player =>
       //小球从木板中弹出
       val ball = player._2.ball
+      val newbeforeX = ball.x
+      val newbeforeY = ball.y
       var newX = (ball.x + ball.speedX).toInt
       var newY = (ball.y + ball.speedY).toInt
       var newspeedX = ball.speedX
@@ -116,17 +117,18 @@ trait Grid {
       val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MC]).get(player._2.id)
       if(mouseAct.isDefined){
         val mouse = mouseAct.get
-        val deg = atan2(mouse.cY - ball.x, mouse.cX-ball.y)
-        newspeedX = (cos(deg) * ball.speed).toFloat
-        newspeedY = (sin(deg) * ball.speed).toFloat
+        val deg = atan2(mouse.cY - ball.y, mouse.cX - ball.x)
+        newspeedX = (cos(deg) * initBallSpeed).toFloat
+        newspeedY = (sin(deg) *initBallSpeed).toFloat
         newonBoard = false
       }
       /**边界碰撞检测**/
       if(newX > boundary.x - ball.radius) newX = boundary.x - ball.radius
       if(newX < ball.radius) newX = ball.radius
       if(newY < ball.radius) newY = ball.radius
-      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY,speedX = newspeedX,speedY = newspeedY,onBoard = newonBoard))
+      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY,beforeX = newbeforeX,beforeY = newbeforeY, speedX = newspeedX,speedY = newspeedY,onBoard = newonBoard))
     }
+
   }
 
   private[this] def updatePlayer() = {
@@ -138,14 +140,13 @@ trait Grid {
     playerMap.values.map(updatePlayerMap(_,mouseAct)).map(s=>(s.id,s)).toMap
   }
   private[this] def updatePlayerMove(player: Player, mouseActMap: Map[String, MP]) = {
-    val mouseAct = mouseActMap.getOrElse(player.id,MP(None,player.targetX,0,0,0))
-//    val deg = atan2(player.targetY - initHeight /2, player.targetX - player.x)
-//    val degX = if(cos(deg).isNaN) 0 else cos(deg)
-    //鼠标始终在木板的中间
-    var newX = player.x + player.speedX
-    if(newX > boundary.x - initWidth/2 ) newX = boundary.x - initWidth/2
-    if(newX < initWidth/2 ) newX = initWidth/2
-    player.copy(x = newX.toInt, targetX = mouseAct.cX, targetY = mouseAct.cY)
+    val mouseAct = mouseActMap.getOrElse(player.id,MP(None,0,0,0,0))
+    //鼠标始终在木板的中间，从而来算它的速度
+    var newX = mouseAct.cX
+    if(newX > boundary.x - initWidth/2 ) newX = (boundary.x - initWidth/2).toShort
+    if(newX < initWidth/2 ) newX = (initWidth/2).toShort
+    val newSpeedX = newX - player.x
+    player.copy(x = newX, speedX = newSpeedX)
   }
 
   def checkCrash()= {
@@ -160,20 +161,35 @@ trait Grid {
         val ball = player.ball
         var newspeedX = ball.speedX
         var newspeedY = ball.speedY
+        var newX = ball.x
+        var newY = ball.y
         brickMap.foreach{
           brick =>
-            checkCollision(Point(ball.x,ball.y),brick._1) match {
-              case 1=>
+            /**   3
+              * 1   2
+              *   4
+              */
+            checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1) match {
+              case 1 =>
                 //x方向转向，砖块消失，用户得分
                 brickMap -= brick._1
                 newspeedX = - newspeedX
-              case 2=>
+                newX = brick._1.x - brickW/2 - initBallRadius
+              case 2 =>
                 //y方向转向
                 brickMap -= brick._1
+                newspeedX = - newspeedX
+                newX = brick._1.x + brickW/2 + initBallRadius
+              case 3 =>
+                brickMap -= brick._1
                 newspeedY = - newspeedY
+                newY = brick._1.y - brickH/2 - initBallRadius
+              case 4 =>
+                brickMap -= brick._1
+                newspeedY = - newspeedY
+                newY = brick._1.y + brickH/2 + initBallRadius
               case x=>
             }
-
         }
         player.copy(ball = ball.copy(speedX = newspeedX, speedY = newspeedY))
     }
@@ -187,7 +203,7 @@ trait Grid {
         val ball = player.ball
         var newspeedX = ball.speedX
         var newspeedY = ball.speedY
-        checkTouchBoundary(Point(ball.x,ball.y),boundary,window) match{
+        checkTouchBoundary(Point(ball.x,ball.y),boundary) match{
           case 1=>
             newspeedX = - newspeedX
           case 2=>
@@ -199,20 +215,22 @@ trait Grid {
     playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
   }
 
-  //检查小球和木板碰撞
+  //检查小球和木板碰撞，有动量守恒
   def checkBallPlayerCrash() = {
     val newPlayerMap = playerMap.values.map{
       player =>
         val ball = player.ball
         var newspeedY= ball.speedY
+        var newspeedX = ball.speedX
         var ballY = ball.y
-        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x,window.y/2 + boundary.y/2)) match{
+        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x, boundary.y - initHeight/2)) match{
           case 1=>
+            newspeedX = newspeedX + ball.speedX
             newspeedY = - newspeedY
-            ballY = window.y/2 + boundary.y/2 + initHeight + initBallRadius
+            ballY = boundary.y/2 + initHeight + initBallRadius
           case _=>
         }
-        player.copy(ball = ball.copy(y = ballY, speedY = newspeedY))
+        player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))
     }
     playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
   }

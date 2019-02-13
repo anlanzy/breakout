@@ -56,10 +56,11 @@ case class DrawGame(
   }
 
   def drawGrid(uid:String, data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {
+    drawBackground
     val players = data.playerDetails
     val bricks = data.brickDetails
     //绘制木板和小球
-    players.foreach{ case Player(id, name, x, targetX, targetY, speedX, width, ball)=>
+    players.foreach{ case Player(id, name, x, speedX, width, ball)=>
       ctx.fillStyle = "#323232"
       val ballX = ball.x + ball.speedX*offsetTime.toFloat/frameRate
       val ballY = ball.y + ball.speedY*offsetTime.toFloat/frameRate

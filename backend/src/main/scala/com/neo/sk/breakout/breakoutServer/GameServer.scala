@@ -74,7 +74,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   //生成玩家
   private[this] def genWaitingStar() = {
     waitingJoin.filterNot(kv => playerMap.contains(kv._1)).foreach{ case (id, name) =>
-      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h - initHeight - initBallRadius))
+      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h - initHeight - initBallRadius,Boundary.w/2, Boundary.h - initHeight - initBallRadius))
       playerMap += id -> player
       dispatch(subscriber)(PlayerJoin(id,player))
       dispatchTo(subscriber)(id, getAllGridData)
@@ -86,6 +86,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   def getAllGridData: Protocol.GridDataSync = {
     var brickDetails: List[Brick] = Nil
     brickMap.foreach(item => brickDetails ::= Brick(item._1.x, item._1.y, item._2))
+//    log.info("brickMap:   "+brickMap)
     Protocol.GridDataSync(
       frameCount,
       playerMap.values.toList,
