@@ -8,6 +8,7 @@ import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.util.utils._
+
 /**
   * User: Taoz
   * Date: 9/1/2016
@@ -126,7 +127,8 @@ trait Grid {
       if(newX > boundary.x - ball.radius) newX = boundary.x - ball.radius
       if(newX < ball.radius) newX = ball.radius
       if(newY < ball.radius) newY = ball.radius
-      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY,beforeX = newbeforeX,beforeY = newbeforeY, speedX = newspeedX,speedY = newspeedY,onBoard = newonBoard))
+      player._1 -> player._2.copy(ball = ball.copy(x = newX,y = newY,beforeX = newbeforeX, beforeY = newbeforeY,
+        speedX = newspeedX,speedY = newspeedY,onBoard = newonBoard))
     }
 
   }
@@ -165,36 +167,44 @@ trait Grid {
         var newspeedY = ball.speedY
         var newX = ball.x
         var newY = ball.y
-        val brick = brickMap.toList.sortBy(brick =>(sqrt(pow(brick._1.x - ball.x, 2.0) + pow(brick._1.y - ball.y, 2.0)))).reverse.headOption
-        if(brick.isDefined){
-          //TODO 碰撞算法需要修改
-          /**   3
-            * 1   2
-            *   4
-            */
-          checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick.get._1) match {
-            case 1 =>
-              //x方向转向，砖块消失，用户得分
-              brickMap -= brick.get._1
-              newspeedX = - newspeedX
-              newX = brick.get._1.x - brickW/2 - initBallRadius
-            case 2 =>
-              //y方向转向
-              brickMap -= brick.get._1
-              newspeedX = - newspeedX
-              newX = brick.get._1.x + brickW/2 + initBallRadius
-            case 3 =>
-              brickMap -= brick.get._1
-              newspeedY = - newspeedY
-              newY = brick.get._1.y - brickH/2 - initBallRadius
-            case 4 =>
-              brickMap -= brick.get._1
-              newspeedY = - newspeedY
-              newY = brick.get._1.y + brickH/2 + initBallRadius
-            case x=>
-          }
+        var pointMap = Map.empty[Point,(Point,Int)] //brick direction types
+        brickMap.toList.foreach{
+          brick =>
+            pointMap += checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1)
         }
-        player.copy(ball = ball.copy(speedX = newspeedX, speedY = newspeedY))
+        val tmpMap = pointMap.filterNot(_._2._2==0)
+          if(!tmpMap.isEmpty){
+            val i = tmpMap.toList.sortBy(i=>sqrt(pow(i._2._1.y - ball.beforeY,2)+pow(i._2._1.x - ball.beforeX,2))).reverse.head
+            i._2._2 match {
+              //TODO 撞到角上的处理
+              case 1 =>
+                //上
+                brickMap -= i._1
+                newspeedY = - newspeedY
+                newX = i._1.x
+                newY = i._1.y
+              case 2 =>
+                //右
+                brickMap -= i._1
+                newspeedX = - newspeedX
+                newX = i._1.x
+                newY = i._1.y
+              case 3 =>
+                //下
+                brickMap -= i._1
+                newspeedY = - newspeedY
+                newX = i._1.x
+                newY = i._1.y
+              case 4 =>
+                //左
+                brickMap -= i._1
+                newspeedX = - newspeedX
+                newX = i._1.x
+                newY = i._1.y
+              case x =>
+            }
+          }
+        player.copy(ball = ball.copy(x = newX, y=newY, speedX = newspeedX, speedY = newspeedY))
     }
     playerMap = newPlayerMap.map(s=>(s.id, s)).toMap
   }
@@ -226,11 +236,13 @@ trait Grid {
         var newspeedY= ball.speedY
         var newspeedX = ball.speedX
         var ballY = ball.y
-        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x, boundary.y - initHeight/2)) match{
-          case 1=>
+        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x, boundary.y - initHeight/2),newspeedY) match{
+          case 1 =>
             newspeedX = newspeedX + ball.speedX
             newspeedY = - newspeedY
             ballY = boundary.y - initHeight - initBallRadius
+          case 2 =>
+            //TODO 游戏结束，后台来做
           case _=>
         }
         player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))

@@ -61,6 +61,7 @@ case class DrawGame(
     val bricks = data.brickDetails
     //绘制木板和小球
     players.foreach{ case Player(id, name, x, speedX, width, ball)=>
+      //小球
       ctx.fillStyle = "#323232"
       val ballX = ball.x + ball.speedX*offsetTime.toFloat/frameRate
       val ballY = ball.y + ball.speedY*offsetTime.toFloat/frameRate
@@ -70,6 +71,7 @@ case class DrawGame(
       ctx.beginPath()
       ctx.arc(xfix,yfix, initBallRadius,0,2 * Math.PI)
       ctx.fill()
+      //木板
       ctx.fillStyle = "#122772"
       val playerX = x + speedX * offsetTime.toFloat/frameRate
       val newplayerX = if(playerX > bounds.x-initWidth/2) bounds.x-initWidth/2 else
