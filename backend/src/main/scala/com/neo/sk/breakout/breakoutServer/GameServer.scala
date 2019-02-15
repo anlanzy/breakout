@@ -113,6 +113,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
             dispatch(subscriber)(PlayerCrash(player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))))
           case 2 =>
           //TODO 玩家死亡 怎么处理？
+            playerMap -= player.id
             dispatch(subscriber)(PlayerDead(player.id))
           case _=>
         }

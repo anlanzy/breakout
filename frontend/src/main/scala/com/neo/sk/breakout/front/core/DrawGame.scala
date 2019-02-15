@@ -30,26 +30,26 @@ case class DrawGame(
   //欢迎文字
   def drawGameWelcome: Unit = {
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
-    ctx.font = "36px Helvetica"
-    val welcome = "Welcome."
+    ctx.font = "32px Helvetica"
+    val welcome = "Welcome"
     val welcomeWidth = ctx.measureText(welcome).width
-    ctx.fillText(welcome, window.x/2-welcomeWidth/2 ,window.y/2-bounds.y/2 - 50)
+    ctx.fillText(welcome, bounds.x/2 - welcomeWidth/2 ,bounds.y/2 - 16)
   }
   //等待文字
   def drawGameWait(myId:String) ={
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
-    ctx.font = "36px Helvetica"
-    val wait = "Please wait."
+    ctx.font = "32px Helvetica"
+    val wait = "Please wait"
     val waitWidth = ctx.measureText(wait).width
-    ctx.fillText(wait, window.x/2-waitWidth/2, window.y/2-bounds.y/2 - 50)
+    ctx.fillText(wait, bounds.x/2 - waitWidth/2 ,bounds.y/2 - 16)
   }
   //离线提示文字
   def drawGameLost: Unit = {
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
-    ctx.font = "36px Helvetica"
-    val lost = "Ops, connection lost...."
+    ctx.font = "32px Helvetica"
+    val lost = "Ops, connection lost"
     val lostWidth = ctx.measureText(lost).width
-    ctx.fillText(lost, window.x/2-lostWidth/2, window.y/2-bounds.y/2 - 50)
+    ctx.fillText(lost, bounds.x/2 - lostWidth/2 ,bounds.y/2 - 16)
   }
 
   def drawBackground: Unit = {

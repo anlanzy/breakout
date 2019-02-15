@@ -56,7 +56,7 @@ class GameHolder {
   def getActionSerialNum=actionSerialNumGenerator.getAndIncrement()
 
   def init(): Unit = {
-    drawGameView.drawGameWelcome
+//    drawGameView.drawGameWelcome
     drawOffScreen.drawBackground
 //    drawGameView.drawGameOn()
 //    drawMiddleView.drawRankMap()
