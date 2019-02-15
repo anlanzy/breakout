@@ -44,7 +44,7 @@ object Protocol {
   /**1、玩家死亡**/
   case class UserDeadMessage(killerName:String, deadId:String, killNum:Short, score:Short, lifeTime:Long) extends GameMessage
   /** 2、玩家离开房间**/
-  case class PlayerLeft(id: Byte) extends GameMessage
+  case class PlayerLeft(id: String) extends GameMessage
 
   case class Wrap(ws:Array[Byte],isKillMsg:Boolean = false) extends WsMsgSource
 
@@ -67,6 +67,10 @@ object Protocol {
   case class JoinRoomSuccess(playerId:String, roomId:Long) extends GameMessage
 
   case class JoinRoomFailure(playerId:String,roomId:Long,errorCode:Int,msg:String) extends GameMessage
+
+  case class PlayerCrash(player:Player) extends GameMessage
+
+  case class PlayerDead(id: String) extends GameMessage
 
   /**
     * 前端发送的数据--------------------------------------

@@ -2,9 +2,9 @@ package com.neo.sk.breakout.breakoutServer
 
 import akka.actor.typed.ActorRef
 import org.slf4j.LoggerFactory
+
 import scala.collection.mutable
 import org.seekloud.byteobject.MiddleBufferInJvm
-
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.core.RoomActor.{dispatch, dispatchTo}
 import com.neo.sk.breakout.shared.Grid
@@ -12,6 +12,7 @@ import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.core.UserActor
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.shared.util.utils.checkTouchPlayer
 /**
   * create by zhaoyin
   * 2019/2/1  5:34 PM
@@ -48,9 +49,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       case 1 =>
         /**第一关：砖块数20，四列，每列五个**/
         for(i <- 0 until 4){
-          val tmpW = (i + 1) * brickW * 2
+          val tmpW = (i + 1) * brickW * 2 + brickW/2
           for(j <- 0 until 5){
-            val tmpH = brickH * 2 + j * brickH
+            val tmpH = brickH * 4 + j * brickH
             val p = Point(tmpW, tmpH)
             brickMap += (p -> j.toShort)
           }
@@ -82,7 +83,6 @@ class GameServer(override val boundary: Point,override val window: Point) extend
     waitingJoin = Map.empty[String, String]
   }
 
-
   def getAllGridData: Protocol.GridDataSync = {
     var brickDetails: List[Brick] = Nil
     brickMap.foreach(item => brickDetails ::= Brick(item._1.x, item._1.y, item._2))
@@ -95,6 +95,30 @@ class GameServer(override val boundary: Point,override val window: Point) extend
 
   def getSubscribersMap(subscribersMap:mutable.HashMap[String,ActorRef[UserActor.Command]]) ={
     subscriber=subscribersMap
+  }
+
+  def checkBallPlayerCrash() = {
+    val newPlayerMap = playerMap.values.map{
+      player =>
+        val ball = player.ball
+        var newspeedY= ball.speedY
+        var newspeedX = ball.speedX
+        var ballY = ball.y
+        checkTouchPlayer(Point(ball.x,ball.y),Point(player.x, boundary.y - initHeight/2),newspeedY) match{
+          case 1 =>
+            //碰到木板
+            newspeedX = newspeedX + ball.speedX
+            newspeedY = - newspeedY
+            ballY = boundary.y - initHeight - initBallRadius
+            dispatch(subscriber)(PlayerCrash(player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))))
+          case 2 =>
+          //TODO 玩家死亡 怎么处理？
+            dispatch(subscriber)(PlayerDead(player.id))
+          case _=>
+        }
+        player.copy(ball = ball.copy(y = ballY, speedX = newspeedX, speedY = newspeedY))
+    }
+    playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
   }
 
 

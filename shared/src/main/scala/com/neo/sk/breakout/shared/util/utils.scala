@@ -65,7 +65,7 @@ object utils {
         case x =>
       }
     }
-    brick -> (direction._1, direction._2)
+    brick -> direction
   }
 
   def checkTouchBoundary(ball:Point, boundary: Point)={
@@ -81,13 +81,13 @@ object utils {
   }
 
   def checkTouchPlayer(ball:Point,player:Point,playerSpeedY:Float) ={
-    if(ball.y + initBallRadius >= player.y - initHeight/2){
+    if(ball.y + initBallRadius >= player.y - initHeight/2 && playerSpeedY > 0){
       //注意此时小球可能与木板平行贴过
-      if(ball.x > player.x - initWidth/2 && ball.x < player.x + initWidth/2 && playerSpeedY > 0){
+      if(ball.x >= player.x - initWidth/2 && ball.x <= player.x + initWidth/2 ){
         //撞到木板上
         1
       }else 2 //没撞到木板,游戏结束
-    }else 0  // 距离木板有一段距离
+    }else 0
   }
 
 

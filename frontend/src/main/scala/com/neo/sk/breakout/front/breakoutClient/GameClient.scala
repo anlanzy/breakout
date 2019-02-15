@@ -34,6 +34,9 @@ class GameClient(override val boundary: Point,override val window: Point) extend
     )
   }
 
+  //检查小球和木板碰撞，有动量守恒
+  def checkBallPlayerCrash() = {}
+
 
 
 

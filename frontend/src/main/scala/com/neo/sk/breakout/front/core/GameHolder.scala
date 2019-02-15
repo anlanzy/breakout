@@ -112,6 +112,8 @@ class GameHolder {
     gameState match {
       case GameState.play if grid.myId!= ""=>
         draw(offsetTime)
+      case GameState.dead =>
+        drawInfoView.drawWhenDead()
       case _ =>
     }
     nextFrame = dom.window.requestAnimationFrame(gameRender())
@@ -145,8 +147,8 @@ class GameHolder {
       }
     }
     infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
-      //球不在木板上的时候可以左右移动
-      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard){
+      //球不在木板上的时候可以左右移动 && 玩家未死亡
+      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard && gameState!=GameState.dead){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
         val pageY = e.pageY - (window.y/2 - bounds.y/2)
         mp = MP(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
@@ -197,6 +199,25 @@ class GameHolder {
       case Protocol.PlayerJoin(id, player) =>
         println(s"${player.id}  加入游戏 ${grid.frameCount} MYID:${grid.myId} ")
 
+      case Protocol.PlayerDead(id) =>
+        if(grid.playerMap.get(id).isDefined){
+          if(id == grid.myId){
+            //TODO 自己死亡
+            gameState = GameState.dead
+          } else {
+            grid.removePlayer(id)
+          }
+        }
+
+      case Protocol.PlayerLeft(id) =>
+        if(grid.playerMap.get(id).isDefined){
+          grid.removePlayer(id)
+          if(id == grid.myId)
+            gameClose
+        }
+
+      case Protocol.PlayerCrash(player) =>
+        grid.playerMap += (player.id -> player)
 
       case msg@_ =>
         println(s"unknown $msg")
@@ -227,6 +248,13 @@ class GameHolder {
   private def wsConnectClose(e:Event) = {
     println("last Ws close")
     e
+  }
+
+  def gameClose={
+    webSocketClient.closeWs
+    dom.window.cancelAnimationFrame(nextFrame)
+    dom.window.clearInterval(nextInt)
+    //    Shortcut.stopMusic("bg")
   }
 
 }

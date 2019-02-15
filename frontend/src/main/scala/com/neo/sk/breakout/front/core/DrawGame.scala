@@ -55,6 +55,16 @@ case class DrawGame(
 
   }
 
+  def drawWhenDead() = {
+    ctx.fillStyle = "rgba(166,168,168,0.5)"
+    ctx.fillRect(0,0,bounds.x,bounds.y)
+    ctx.font = "30px Helvetica"
+    ctx.fillStyle = "#464747"
+    val text = "YOU DEAD"
+    val textLength = ctx.measureText(text).width
+    ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 15)
+  }
+
   def drawGrid(uid:String, data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {
     drawBackground
     val players = data.playerDetails
@@ -63,8 +73,8 @@ case class DrawGame(
     players.foreach{ case Player(id, name, x, speedX, width, ball)=>
       //小球
       ctx.fillStyle = "#323232"
-      val ballX = ball.x + ball.speedX*offsetTime.toFloat/frameRate
-      val ballY = ball.y + ball.speedY*offsetTime.toFloat/frameRate
+      val ballX = ball.x + ball.speedX * offsetTime.toFloat/frameRate
+      val ballY = ball.y + ball.speedY * offsetTime.toFloat/frameRate
       val xfix = if(ballX > bounds.x - initBallRadius) bounds.x-initBallRadius else
       if(ballX < initBallRadius) initBallRadius else ballX
       val yfix = if(ballY < initBallRadius)  initBallRadius else ballY
