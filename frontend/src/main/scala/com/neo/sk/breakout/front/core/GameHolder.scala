@@ -35,7 +35,7 @@ class GameHolder {
   /**状态值**/
   private[this] var justSynced = false
   //游戏状态
-  private[this] var  gameState = GameState.play
+  private[this] var  gameState = GameState.waiting
 
 
   /**可变参数**/
@@ -110,10 +110,14 @@ class GameHolder {
     val curTime = System.currentTimeMillis()
     val offsetTime = curTime - logicFrameTime
     gameState match {
+      case GameState.waiting =>
+        drawGameView.drawGameWait(grid.myId)
       case GameState.play if grid.myId!= ""=>
         draw(offsetTime)
       case GameState.dead =>
         drawInfoView.drawWhenDead()
+        //可以看到别的玩家的操作
+        draw(offsetTime)
       case _ =>
     }
     nextFrame = dom.window.requestAnimationFrame(gameRender())
@@ -122,13 +126,7 @@ class GameHolder {
   def draw(offsetTime:Long) = {
     if (webSocketClient.getWsState){
       val data = grid.getGridData()
-      data.playerDetails.find(_.id == grid.myId) match {
-        case Some(p)=>
-          drawGameView.drawGrid(grid.myId,data,offsetTime,bounds,window)
-          //TODO 显示用户得分
-        case None =>
-          drawGameView.drawGameWait(grid.myId)
-      }
+      drawGameView.drawGrid(data,offsetTime,bounds,window)
     }else{
       drawGameView.drawGameLost
     }
@@ -147,8 +145,8 @@ class GameHolder {
       }
     }
     infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
-      //球不在木板上的时候可以左右移动 && 玩家未死亡
-      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard && gameState!=GameState.dead){
+      //球不在木板上的时候可以左右移动 && 玩家状态为play
+      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard && gameState==GameState.play){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
         val pageY = e.pageY - (window.y/2 - bounds.y/2)
         mp = MP(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
@@ -162,6 +160,7 @@ class GameHolder {
     data match {
       case Protocol.Id(id) =>
         grid.myId = id
+        gameState = GameState.play
 
       case m:Protocol.KC =>
         if(m.id.isDefined){
@@ -198,6 +197,7 @@ class GameHolder {
 
       case Protocol.PlayerJoin(id, player) =>
         println(s"${player.id}  加入游戏 ${grid.frameCount} MYID:${grid.myId} ")
+
 
       case Protocol.PlayerDead(id) =>
         if(grid.playerMap.get(id).isDefined){

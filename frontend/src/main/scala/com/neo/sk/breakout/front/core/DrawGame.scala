@@ -22,6 +22,11 @@ case class DrawGame(
   this.canvas.width = bounds.x
   this.canvas.height = bounds.y
 
+  def test() = {
+    ctx.fillStyle ="#f00925"
+    ctx.fillRect(0, 0, bounds.x, bounds.y)
+  }
+
   //欢迎文字
   def drawGameWelcome: Unit = {
     ctx.fillStyle = "rgba(99, 99, 99, 1)"
@@ -56,7 +61,8 @@ case class DrawGame(
   }
 
   def drawWhenDead() = {
-    ctx.fillStyle = "rgba(166,168,168,0.5)"
+    cleanCtx()
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)"
     ctx.fillRect(0,0,bounds.x,bounds.y)
     ctx.font = "30px Helvetica"
     ctx.fillStyle = "#464747"
@@ -65,8 +71,8 @@ case class DrawGame(
     ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 15)
   }
 
-  def drawGrid(uid:String, data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {
-    drawBackground
+  def drawGrid(data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {
+    cleanCtx()
     val players = data.playerDetails
     val bricks = data.brickDetails
     //绘制木板和小球
@@ -104,6 +110,10 @@ case class DrawGame(
           ctx.fillRect(x - brickW/2, y - brickH/2, brickW, brickH)
       }
     }
+  }
+
+  def cleanCtx() = {
+    ctx.clearRect(0,0,bounds.x,bounds.y)
   }
 
 }
