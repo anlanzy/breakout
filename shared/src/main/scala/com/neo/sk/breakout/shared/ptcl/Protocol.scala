@@ -54,6 +54,7 @@ object Protocol {
 
   case class MatchRoomError() extends GameMessage
 
+  case class Bricks(brickMap:Map[Point,Short]) extends GameMessage
 
   case class Pong(timestamp: Long)extends GameMessage
 

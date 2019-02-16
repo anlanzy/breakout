@@ -15,8 +15,11 @@ object GameConfig {
   val initBallSpeed = 30
 
   //砖块宽高
-  val brickW = 36
-  val brickH = 20
+  val brickW = 40
+  val brickH = 28
+
+  //每次上升的高度
+  val riseHeight = 60
 
   val maxDelayFrame = 3
 

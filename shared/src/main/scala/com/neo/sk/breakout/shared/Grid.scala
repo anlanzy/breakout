@@ -30,7 +30,7 @@ trait Grid {
   //玩家列表 玩家Id -> 玩家信息
   var playerMap = Map.empty[String,Player]
 
-  //砖块列表 位置->颜色
+  //砖块列表 位置->次数
   var brickMap = Map.empty[Point, Short]
 
   //操作列表  帧数->(用户ID -> 操作)

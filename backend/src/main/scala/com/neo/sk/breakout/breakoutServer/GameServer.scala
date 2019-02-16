@@ -28,6 +28,8 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   private var roomId = 0l
   //游戏关卡等级，目前有三关
   private var gameCheckPoint = 1
+  //轮次
+  private var gameTurns = 1
   //等待加入的玩家
   private[this] var waitingJoin = Map.empty[String, String]
   private [this] var subscriber=mutable.HashMap[String,ActorRef[UserActor.Command]]()
@@ -63,13 +65,76 @@ class GameServer(override val boundary: Point,override val window: Point) extend
           val tmpW = Boundary.w /2 - Math.floor(i/2) * brickW
           val tmpH = 40 + j * brickH
           val p = Point(tmpW.toInt, tmpH)
-          val color = random.nextInt(2).toShort
+          val color = random.nextInt(2).toShort  //
           brickMap += (p -> color)
         }
       case x =>
         //TODO 其他关卡，待开发
     }
     gameCheckPoint += 1
+  }
+
+  //产生轮次： 1.每一轮的砖块 2.该轮有几个球可以打
+  def generateGT() = {
+    //每行1-4个
+    //1-5 只产生1-10之间的  5-10 只产生 1-30之间的 10+ 都产生
+    var newbrickMap = Map.empty[Point, Short]  //TODO 暂时不用
+    brickMap = brickMap.map(i => i.copy(_1 = i._1.copy(y = i._1.y-riseHeight))).filter(_._1.y<=brickH/2)
+    gameTurns match {
+      case x if(x>=1 && x <= 5) =>
+        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
+        for(i <-0 until brickNums){
+          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          while(!checkCross(brickMap,pointx,pointy)){
+            pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          }
+          val num  = (random.nextInt(50) + 1)
+          brickMap += Point(pointx,pointy) -> num
+          newbrickMap += Point(pointx,pointy) -> num
+        }
+      case x if(x>=6 && x <= 10) =>
+        val brickNums = random.nextInt(4).toShort + 1// 0123 + 1
+        for(i <-0 until brickNums){
+          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          while(!checkCross(brickMap,pointx,pointy)){
+            pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          }
+          val num  = (random.nextInt(50) + 1)
+          brickMap += Point(pointx,pointy) -> num
+          newbrickMap += Point(pointx,pointy) -> num
+        }
+      case x if(x>=11) =>
+        val brickNums = random.nextInt(4).toShort + 1// 0123 + 1
+        for(i <-0 until brickNums){
+          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          while(!checkCross(brickMap,pointx,pointy)){
+            pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+          }
+          val num  = (random.nextInt(50) + 1)
+          brickMap += Point(pointx,pointy) -> num
+          newbrickMap += Point(pointx,pointy) -> num
+        }
+    }
+    dispatch(subscriber)(Protocol.Bricks(brickMap))
+    gameTurns += 1
+  }
+
+  def checkCross(brickMap: Map[Point,Short],pointX:Int,pointY:Int):Boolean = {
+    var cross = false
+    brickMap.foreach(i =>{
+      if(math.abs(pointX-i._1.x)>=brickW || math.abs(pointY-i._1.y) >=brickH){
+        cross = false
+      }else{
+        cross = true
+      }
+    })
+    cross
   }
 
   //生成玩家

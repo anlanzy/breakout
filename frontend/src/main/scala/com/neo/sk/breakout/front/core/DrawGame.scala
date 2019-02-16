@@ -95,16 +95,13 @@ case class DrawGame(
       ctx.fillRect(newplayerX - initWidth/2, bounds.y-initHeight,initWidth,initHeight)
     }
     //绘制砖块
-    bricks.groupBy(_.color).foreach{ a=>
+    bricks.groupBy(_.nums).foreach{ a=>
       ctx.fillStyle = a._1 match {
-        case 0 => "#f3456d"
-        case 1 => "#f49930"
-        case 2  => "#f4d95b"
-        case 3  => "#2a9514"
-        case 4  => "#4390d0"
-        case 5  => "#bead92"
-        case 6  => "#cfe6ff"
-        case _  => "#de9dd6"
+        case x if( x>=1 && x<=10) => "#a3dff8"
+        case x if( x>=11 && x<=20)=> "#fbde80"
+        case x if( x>=21 && x<=30)=> "#69d17d"
+        case x if( x>=31 && x<=50)=> "#fb5f73"
+        case _  => "#830a19"
       }
       a._2.foreach{case Brick(x, y, color)=>
           ctx.fillRect(x - brickW/2, y - brickH/2, brickW, brickH)

@@ -216,6 +216,9 @@ class GameHolder {
             gameClose
         }
 
+      case Protocol.Bricks(brickMap) =>
+        grid.brickMap = brickMap
+
       case Protocol.PlayerCrash(player) =>
         grid.playerMap += (player.id -> player)
 

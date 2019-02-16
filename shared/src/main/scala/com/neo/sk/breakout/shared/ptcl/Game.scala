@@ -32,10 +32,11 @@ object Game {
 //                     targetY:Int = 0,
                      speedX:Float = 0,
                      width:Double =  initWidth,
-                     ball: Ball
+//                     ball: List[Ball]
                    )
 
   case class Ball(
+                   id:String,
                    x:Int,
                    y:Int,
                    beforeX:Int,
@@ -51,7 +52,7 @@ object Game {
   case class Brick(
                   x:Int,
                   y:Int,
-                  color:Short
+                  nums:Short //打多少次才会消失 【1-10】【10 - 20】【20 - 30】【30 - 50】
                   )
 
   object GameState{
@@ -64,7 +65,7 @@ object Game {
 
   object Boundary{
     val w = 400
-    val h = 600
+    val h = 700
   }
 
 
