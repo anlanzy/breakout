@@ -153,8 +153,8 @@ trait Grid {
   }
 
   def checkCrash()= {
-    checkBallBrickCrash()
     checkBallBoundaryCrash()
+    checkBallBrickCrash()
     checkBallPlayerCrash()
   }
 
@@ -167,14 +167,18 @@ trait Grid {
         var newspeedY = ball.speedY
         var newX = ball.x
         var newY = ball.y
-        var pointMap = Map.empty[Point,(Point,Int)] //brick -> direction
+        var pointMap = Map.empty[Point,(Point,Int)] //砖块 ->(交点 -> 类型)（上下左右）
         brickMap.toList.foreach{
           brick =>
-            pointMap += checkCollision(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1)
+            var x = checkCollisionNew(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1)
+            if(x._2._2!=0){
+              pointMap += x
+            }
         }
-        val tmpMap = pointMap.filterNot(_._2._2==0)
-          if(!tmpMap.isEmpty){
-            val i = tmpMap.toList.sortBy(i=>sqrt(pow(i._2._1.y - ball.beforeY,2)+pow(i._2._1.x - ball.beforeX,2))).reverse.head
+          if(!pointMap.isEmpty){
+            println(pointMap)
+            val i = pointMap.toList.sortBy(i=>sqrt(pow(i._2._1.y - ball.beforeY,2)+pow(i._2._1.x - ball.beforeX,2))).head
+            //砖块i._1 ->(交点i._2._1 -> 类型i._2._2)（上下左右）
             i._2._2 match {
               //TODO 撞到角上的处理
               case 1 =>
