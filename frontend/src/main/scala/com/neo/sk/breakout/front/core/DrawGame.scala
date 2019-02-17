@@ -75,10 +75,32 @@ case class DrawGame(
     cleanCtx()
     val players = data.playerDetails
     val bricks = data.brickDetails
-    //绘制木板和小球
-    players.foreach{ case Player(id, name, x, speedX, width, ball)=>
+    players.foreach{ case Player(id, name, x, color, ball)=>
       //小球
-      ctx.fillStyle = "#323232"
+      ctx.fillStyle = color match {
+        case 1 => "#fa8b28"
+        case 2 => "#4a27fa"
+        case 3 => "#199e28"
+        case 4 => "#f32c5f"
+        case 5 => "#4ff6f8"
+        case 6 => "#fabf30"
+        case _ => "#fa8b28"
+      }
+      //玩家姓名
+      if(x == bounds.x * 1/3){
+        //自己
+        ctx.font = "30px Helvetica"
+        val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
+        val nameWidth = ctx.measureText(namefix).width
+        ctx.fillText(namefix, x - initBallRadius - nameWidth - 5, 20)
+      }else {
+        //对方
+        ctx.font = "30px Helvetica"
+        val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
+        val nameWidth = ctx.measureText(namefix).width
+        ctx.fillText(namefix, x + initBallRadius + 5, 20)
+      }
+      //小球
       val ballX = ball.x + ball.speedX * offsetTime.toFloat/frameRate
       val ballY = ball.y + ball.speedY * offsetTime.toFloat/frameRate
       val xfix = if(ballX > bounds.x - initBallRadius) bounds.x-initBallRadius else
@@ -87,12 +109,6 @@ case class DrawGame(
       ctx.beginPath()
       ctx.arc(xfix,yfix, initBallRadius,0,2 * Math.PI)
       ctx.fill()
-      //木板
-      ctx.fillStyle = "#122772"
-      val playerX = x + speedX * offsetTime.toFloat/frameRate
-      val newplayerX = if(playerX > bounds.x-initWidth/2) bounds.x-initWidth/2 else
-      if(playerX<  initWidth/2) initWidth/2 else playerX
-      ctx.fillRect(newplayerX - initWidth/2, bounds.y-initHeight,initWidth,initHeight)
     }
     //绘制砖块
     bricks.groupBy(_.nums).foreach{ a=>

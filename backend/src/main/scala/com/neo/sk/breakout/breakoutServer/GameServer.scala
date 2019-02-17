@@ -26,8 +26,6 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   override def info(msg: String): Unit = log.info(msg)
 
   private var roomId = 0l
-  //游戏关卡等级，目前有三关
-  private var gameCheckPoint = 1
   //轮次
   private var gameTurns = 1
   //等待加入的玩家
@@ -36,43 +34,14 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   implicit val sendBuffer = new MiddleBufferInJvm(81920)
 
 
-  /**产生关卡**/
-  generateGC()
+  /**产生初始砖块**/
+  generateGT()
 
   def setRoomId(id:Long)={
     roomId = id
   }
 
   def addPlayer(id: String, name: String) = waitingJoin += (id -> name)
-
-  //生成游戏关卡
-  def generateGC():Unit = {
-    gameCheckPoint match {
-      case 1 =>
-        /**第一关：砖块数20，四列，每列五个**/
-        for(i <- 0 until 4){
-          val tmpW = (i + 1) * brickW * 2 + brickW/2
-          for(j <- 0 until 5){
-            val tmpH = brickH * 4 + j * brickH
-            val p = Point(tmpW, tmpH)
-            brickMap += (p -> j.toShort)
-          }
-        }
-      case 2 =>
-        /**第二关：砖块数25个，四边形**/
-        val numList = List(1, 3, 5, 7, 5, 3, 1)
-        for(i <- numList; j <- 0 until 7){
-          val tmpW = Boundary.w /2 - Math.floor(i/2) * brickW
-          val tmpH = 40 + j * brickH
-          val p = Point(tmpW.toInt, tmpH)
-          val color = random.nextInt(2).toShort  //
-          brickMap += (p -> color)
-        }
-      case x =>
-        //TODO 其他关卡，待开发
-    }
-    gameCheckPoint += 1
-  }
 
   //产生轮次： 1.每一轮的砖块 2.该轮有几个球可以打
   def generateGT() = {
@@ -140,7 +109,12 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   //生成玩家
   private[this] def genWaitingStar() = {
     waitingJoin.filterNot(kv => playerMap.contains(kv._1)).foreach{ case (id, name) =>
-      val player = Player(id,name, Boundary.w/2, ball = Ball(Boundary.w/2, Boundary.h - initHeight - initBallRadius,Boundary.w/2, Boundary.h - initHeight - initBallRadius))
+      var player = Player("","",0,0, ball = Ball(0,0,0,0,0,0f,0f,true))
+      if(playerMap.isEmpty){
+        player = Player(id,name, Boundary.w * 1/3, 1, ball = Ball(Boundary.w * 1/3, initBallRadius, Boundary.w * 1/3, initBallRadius))
+      }else {
+        player = Player(id,name, Boundary.w * 2/3, 2, ball = Ball(Boundary.w * 2/3, initBallRadius, Boundary.w * 2/3, initBallRadius))
+      }
       playerMap += id -> player
       dispatch(subscriber)(PlayerJoin(id,player))
       dispatchTo(subscriber)(id, getAllGridData)

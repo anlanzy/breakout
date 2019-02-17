@@ -36,9 +36,6 @@ trait Grid {
   //操作列表  帧数->(用户ID -> 操作)
   var actionMap = Map.empty[Int, Map[String, KC]]
 
-  //木板的鼠标事件 帧数->(用户ID -> 操作)
-  var mouseActionMap = Map.empty[Int, Map[String, MP]]
-
   //小球的鼠标事件 帧数->(用户ID -> 操作)
   var ballMouseActionMap = Map.empty[Int, Map[String, MC]]
 
@@ -58,12 +55,6 @@ trait Grid {
     actionMap += (keyCode.f -> tmp)
   }
 
-  def addMouseActionWithFrame(id: String, mp:MP) = {
-    val map = mouseActionMap.getOrElse(mp.f, Map.empty)
-    val tmp = map + (id -> mp)
-    mouseActionMap += (mp.f -> tmp)
-  }
-
   def addBallMouseActionWithFrame(id:String, mc:MC) = {
     val map = ballMouseActionMap.getOrElse(mc.f, Map.empty)
     val tmc = map + (id -> mc)
@@ -77,27 +68,22 @@ trait Grid {
         val actionQueue = map.filterNot(t => t._1 == id && k.sN == t._2.sN)
         actionMap += (frame->actionQueue)
       case m:MP=>
-        val map = mouseActionMap.getOrElse(frame,Map.empty)
+        val map = ballMouseActionMap.getOrElse(frame,Map.empty)
         val actionQueue = map.filterNot(t => t._1 == id && m.sN == t._2.sN)
-        mouseActionMap += (frame->actionQueue)
+        ballMouseActionMap += (frame->actionQueue)
     }
   }
-
-
 
 
   def update() = {
     updateSpots()
     actionMap -= frameCount
-    mouseActionMap -= frameCount
     ballMouseActionMap -= frameCount
     frameCount += 1
   }
 
 
   private[this] def updateSpots() = {
-    /**更新木板的位置**/
-    updatePlayer()
     /**更新小球的位置**/
     updateBall()
     /**碰撞检测**/
@@ -133,24 +119,6 @@ trait Grid {
 
   }
 
-  private[this] def updatePlayer() = {
-
-    def updatePlayerMap(player: Player, mouseActMap: Map[String, MP])={
-      updatePlayerMove(player,mouseActMap)
-    }
-    val mouseAct = mouseActionMap.getOrElse(frameCount, Map.empty[String, MP])
-    playerMap = playerMap.values.map(updatePlayerMap(_,mouseAct)).map(s=>(s.id,s)).toMap
-  }
-
-  private[this] def updatePlayerMove(player: Player, mouseActMap: Map[String, MP]) = {
-    val mouseAct = mouseActMap.get(player.id)
-    //鼠标始终在木板的中间，从而来算它的速度
-    var newX = player.x + player.speedX
-    if(newX > boundary.x - initWidth/2 ) newX = (boundary.x - initWidth/2).toShort
-    if(newX < initWidth/2 ) newX = (initWidth/2).toShort
-    val newSpeedX = if(mouseAct.isDefined) mouseAct.get.cX - newX else 0
-    player.copy(x = newX.toInt, speedX = newSpeedX)
-  }
 
   def checkCrash()= {
     checkBallBoundaryCrash()

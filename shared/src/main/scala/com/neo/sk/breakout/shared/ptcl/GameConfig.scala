@@ -7,9 +7,7 @@ package com.neo.sk.breakout.shared.ptcl
 object GameConfig {
 
   val frameRate = 150  //ms
-  //玩家木板初始大小
-  val initWidth = 80
-  val initHeight = 12
+
   //玩家小球信息
   val initBallRadius:Short  = 8
   val initBallSpeed = 30

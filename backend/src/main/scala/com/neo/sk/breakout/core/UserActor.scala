@@ -96,9 +96,6 @@ object UserActor {
             log.debug(s"键盘事件$keyCode")
             Key(keyCode,f,n)
 
-          case MP(_,clientX,clientY,f,n)=>
-            Mouse(clientX,clientY,f,n)
-
           case MC(_,clientX,clientY,f,n)=>
             MouseClick(clientX,clientY,f,n)
 

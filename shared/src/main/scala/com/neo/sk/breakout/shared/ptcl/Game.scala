@@ -28,15 +28,11 @@ object Game {
                      id:String,
                      name:String,
                      x:Int,
-//                     targetX:Int = 0,
-//                     targetY:Int = 0,
-                     speedX:Float = 0,
-                     width:Double =  initWidth,
-//                     ball: List[Ball]
+                     color: Byte,
+                     ball: Ball  //玩家就一个小球
                    )
 
   case class Ball(
-                   id:String,
                    x:Int,
                    y:Int,
                    beforeX:Int,

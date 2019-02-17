@@ -144,16 +144,6 @@ class GameHolder {
         webSocketClient.sendMsg(mc)
       }
     }
-    infoViewCanvas.onmousemove = { (e: dom.MouseEvent) =>
-      //球不在木板上的时候可以左右移动 && 玩家状态为play
-      if(grid.playerMap.get(grid.myId).isDefined && !grid.playerMap.get(grid.myId).get.ball.onBoard && gameState==GameState.play){
-        val pageX = e.pageX - (window.x/2 - bounds.x/2)
-        val pageY = e.pageY - (window.y/2 - bounds.y/2)
-        mp = MP(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
-        grid.addMouseActionWithFrame(grid.myId, mp)
-        webSocketClient.sendMsg(mp)
-      }
-    }
   }
 
   private def wsMessageHandler(data:GameMessage):Unit = {
@@ -169,15 +159,8 @@ class GameHolder {
             grid.addActionWithFrame(mid,m)
           }
         }
-        //目的：接受其他玩家的动作
-      case m: Protocol.MP =>
-        if(m.id.isDefined){
-          val mid = m.id.get
-          if(!grid.myId.equals(mid)){
-            grid.addMouseActionWithFrame(mid,m)
-          }
-        }
 
+        //目的：接受其他玩家的动作
       case m:Protocol.MC =>
         if(m.id.isDefined){
           val mid = m.id.get
