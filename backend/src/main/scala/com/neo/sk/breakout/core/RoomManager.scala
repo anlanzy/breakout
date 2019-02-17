@@ -44,7 +44,6 @@ object RoomManager {
       (ctx, msg) =>
         msg match {
           case JoinRoom(playerInfo,roomIdOpt,userActor) =>
-//            var roomId = roomIdGenerator.getAndIncrement()
             if(roomIdOpt.isDefined){
               //加入房间
               roomInUse.get(roomIdOpt.get) match{
@@ -55,6 +54,7 @@ object RoomManager {
                     getRoomActor(ctx,roomIdOpt.get) ! RoomActor.JoinRoom(playerInfo,userActor)
                   }else{
                     //TODO 告诉用户，该房间已满
+
                   }
                 case None =>
                   //TODO 告诉用户，该房间不存在or直接创建一个新房间？
@@ -66,7 +66,6 @@ object RoomManager {
               roomInUse.put(roomId,List(playerInfo.userId))
               getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
             }
-            log.debug(s"now roomInUse:$roomInUse")
             Behaviors.same
 
           case LeftRoom(playerInfo) =>

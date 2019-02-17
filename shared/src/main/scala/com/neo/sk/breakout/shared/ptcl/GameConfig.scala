@@ -13,8 +13,8 @@ object GameConfig {
   val initBallSpeed = 30
 
   //砖块宽高
-  val brickW = 40
-  val brickH = 28
+  val brickW = 50
+  val brickH = 25
 
   //每次上升的高度
   val riseHeight = 60

@@ -52,8 +52,6 @@ object UserActor {
 
   case class Key(keyCode: Int,frame:Int,n:Int) extends Command with RoomActor.Command
 
-  case class Mouse(clientX:Short,clientY:Short,frame:Int,n:Int) extends Command with RoomActor.Command
-
   case class MouseClick(clientX:Short,clientY:Short,frame:Int,n:Int) extends Command with RoomActor.Command
 
   case class NetTest(id: String, createTime: Long) extends Command with RoomActor.Command
@@ -105,9 +103,9 @@ object UserActor {
           case Protocol.CreateRoom =>
             CreateRoom
 
-          case Protocol.JoinRoom(roomIdOp) =>
-            log.info("JoinRoom!!!!!!")
-            StartGame(roomIdOp)
+//          case Protocol.JoinRoom(roomIdOp) =>
+//            log.info("JoinRoom!!!!!!")
+//            StartGame(roomIdOp)
 
           case _=>
             UnKnowAction
@@ -220,11 +218,6 @@ object UserActor {
       msg match {
         case Key(keyCode,frame,n) =>
           roomActor ! RoomActor.KeyR(userInfo.userId, keyCode,frame,n)
-          Behaviors.same
-
-        case Mouse(x,y,frame,n) =>
-          log.debug(s"gor $msg")
-          roomActor ! RoomActor.MouseR(userInfo.userId,x,y,frame,n)
           Behaviors.same
 
         case MouseClick(x,y,frame,n) =>

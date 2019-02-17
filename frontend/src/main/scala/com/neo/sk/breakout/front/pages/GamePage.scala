@@ -24,7 +24,7 @@ class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page 
 
   override def render: Elem = {
     Shortcut.scheduleOnce(() =>init(),0)
-    <div style="width:400px; height:600px">
+    <div style="width:500px; height:700px">
       {gameView}
       {infoView}
       {offScreen}

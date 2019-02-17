@@ -89,16 +89,15 @@ case class DrawGame(
       //玩家姓名
       if(x == bounds.x * 1/3){
         //自己
-        ctx.font = "30px Helvetica"
+        ctx.font = "20px Helvetica"
         val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
         val nameWidth = ctx.measureText(namefix).width
-        ctx.fillText(namefix, x - initBallRadius - nameWidth - 5, 20)
+        ctx.fillText(namefix, x - initBallRadius - nameWidth - 10, 20)
       }else {
         //对方
-        ctx.font = "30px Helvetica"
+        ctx.font = "20px Helvetica"
         val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
-        val nameWidth = ctx.measureText(namefix).width
-        ctx.fillText(namefix, x + initBallRadius + 5, 20)
+        ctx.fillText(namefix, x + initBallRadius + 10, 20)
       }
       //小球
       val ballX = ball.x + ball.speedX * offsetTime.toFloat/frameRate
@@ -119,8 +118,13 @@ case class DrawGame(
         case x if( x>=31 && x<=50)=> "#fb5f73"
         case _  => "#830a19"
       }
-      a._2.foreach{case Brick(x, y, color)=>
+      a._2.foreach{case Brick(x, y, nums)=>
+        {
+          ctx.font = "15px Helvetica"
           ctx.fillRect(x - brickW/2, y - brickH/2, brickW, brickH)
+          ctx.fillStyle = "#ffffff"
+          ctx.fillText(nums.toString, x-5,y)
+        }
       }
     }
   }

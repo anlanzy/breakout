@@ -123,7 +123,6 @@ trait Grid {
   def checkCrash()= {
     checkBallBoundaryCrash()
     checkBallBrickCrash()
-    checkBallPlayerCrash()
   }
 
   //检查小球和砖块碰撞
@@ -151,25 +150,41 @@ trait Grid {
               //TODO 撞到角上的处理
               case 1 =>
                 //上
-                brickMap -= i._1
+                if(brickMap(i._1) - 1==0){
+                  brickMap -= i._1
+                }else {
+                  brickMap += i._1 -> (brickMap(i._1) - 1).toShort
+                }
                 newspeedY = - newspeedY
                 newX = i._2._1.x
                 newY = i._2._1.y
               case 2 =>
                 //右
-                brickMap -= i._1
+                if(brickMap(i._1) - 1==0){
+                  brickMap -= i._1
+                }else {
+                  brickMap += i._1 -> (brickMap(i._1) - 1).toShort
+                }
                 newspeedX = - newspeedX
                 newX = i._2._1.x
                 newY = i._2._1.y
               case 3 =>
                 //下
-                brickMap -= i._1
+                if(brickMap(i._1) - 1==0){
+                  brickMap -= i._1
+                }else {
+                  brickMap += i._1 -> (brickMap(i._1) - 1).toShort
+                }
                 newspeedY = - newspeedY
                 newX = i._2._1.x
                 newY = i._2._1.y
               case 4 =>
                 //左
-                brickMap -= i._1
+                if(brickMap(i._1) - 1==0){
+                  brickMap -= i._1
+                }else {
+                  brickMap += i._1 -> (brickMap(i._1) - 1).toShort
+                }
                 newspeedX = - newspeedX
                 newX = i._2._1.x
                 newY = i._2._1.y
@@ -199,9 +214,6 @@ trait Grid {
     }
     playerMap = newPlayerMap.map(s=>(s.id,s)).toMap
   }
-
-  //检查小球和木板碰撞，有动量守恒
-  def checkBallPlayerCrash()
 
 
 

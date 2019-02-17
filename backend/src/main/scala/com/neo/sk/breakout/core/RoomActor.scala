@@ -38,12 +38,10 @@ object RoomActor {
 
   case class KeyR(id:String, keyCode: Int,frame:Int,n:Int) extends Command
 
-  case class MouseR(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
-
   case class MouseRClick(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
 
   def create(roomId:Long):Behavior[Command] = {
-    log.debug(s"RoomActor-$roomId start...")
+    log.info(s"RoomActor-$roomId start...")
     Behaviors.setup[Command]{ ctx =>
       Behaviors.withTimers[Command] {
         implicit timer =>
@@ -53,7 +51,6 @@ object RoomActor {
           /**每个房间都有一个自己的gird**/
           val grid = new GameServer(bounds,window)
           grid.setRoomId(roomId)
-
           /**后台的逻辑帧**/
           timer.startPeriodicTimer(SyncTimeKey, Sync, frameRate millis)
           idle(roomId, grid,playerMap, subscribersMap, 0l)
@@ -72,7 +69,7 @@ object RoomActor {
           ):Behavior[Command] = {
     Behaviors.receive{ (ctx, msg) =>
       msg match {
-        case JoinRoom(playerInfo,userActor) =>
+        case JoinRoom(playerInfo, userActor) =>
           playerMap.put(playerInfo.userId, playerInfo.userName)
           subscribersMap.put(playerInfo.userId, userActor)
           grid.addPlayer(playerInfo.userId, playerInfo.userName)
@@ -96,13 +93,6 @@ object RoomActor {
           if(grid.playerMap.get(id).isDefined){
             grid.addActionWithFrame(id, KC(Some(id),keyCode,math.max(grid.frameCount,frame),n))
             dispatch(subscribersMap)(KC(Some(id),keyCode,math.max(grid.frameCount,frame),n))
-          }
-          Behaviors.same
-
-        case RoomActor.MouseR(id,x,y,frame,n) =>
-          if(grid.playerMap.get(id).isDefined){
-            grid.addMouseActionWithFrame(id,MP(Some(id),x,y,math.max(grid.frameCount,frame),n))
-            dispatch(subscribersMap)(MP(Some(id),x,y,math.max(grid.frameCount,frame),n))
           }
           Behaviors.same
 
