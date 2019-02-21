@@ -6,7 +6,7 @@ import org.scalajs.dom.html.Canvas
 import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
-
+import scalatags.JsDom.short._
 
 /**
   * create by zhaoyin
@@ -18,6 +18,9 @@ case class DrawGame(
                      bounds:Point,
                      window:Point
                    ) {
+
+  private[this] val addBallImg = img(*.src := s"/breakout/static/img/addBall.png").render
+
 
   this.canvas.width = bounds.x
   this.canvas.height = bounds.y

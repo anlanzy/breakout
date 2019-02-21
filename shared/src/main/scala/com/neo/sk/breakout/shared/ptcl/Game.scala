@@ -29,7 +29,7 @@ object Game {
                      name:String,
                      x:Int,
                      color: Byte,
-                     ball: Ball  //玩家就一个小球
+                     ball: List[Ball]  //玩家就一个小球
                    )
 
   case class Ball(
@@ -42,7 +42,6 @@ object Game {
                    speedX:Float = 0,
                    speedY:Float = 0,
 //                   touchBorder : Boolean = false,//TODO 是否触碰边界
-                   onBoard:Boolean = true //TODO 在木板上 是否需要该参数
                  )
 
   case class Brick(

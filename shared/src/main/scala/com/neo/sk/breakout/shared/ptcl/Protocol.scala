@@ -27,10 +27,9 @@ object Protocol {
   case class GridDataSync(
                            frameCount: Int,
                            playerDetails: List[Player],
-                           brickDetails: List[Brick]
+                           brickDetails: List[Brick],
+                           addBallDetails: List[Point]
                          ) extends GameMessage
-
-
 
   case class Id(id: String) extends GameMessage
 
@@ -56,6 +55,8 @@ object Protocol {
 
   case class Bricks(brickMap:Map[Point,Short]) extends GameMessage
 
+  case class AddBall(addBallList: List[Point]) extends GameMessage
+
   case class Pong(timestamp: Long)extends GameMessage
 
   case class VictoryMsg(id:String,name:String,score:Short,totalFrame:Int) extends GameMessage
@@ -72,6 +73,8 @@ object Protocol {
   case class PlayerCrash(player:Player) extends GameMessage
 
   case class PlayerDead(id: String) extends GameMessage
+
+  case class PlayerMap(playerMap: Map[String,Player]) extends GameMessage
 
   /**
     * 前端发送的数据--------------------------------------

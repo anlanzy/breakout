@@ -17,6 +17,7 @@ class GameClient(override val boundary: Point,override val window: Point) extend
 
   var myId = ""
 
+
   def setSyncGridData(data:GridDataSync): Unit = {
     frameCount = data.frameCount
     actionMap = actionMap.filterKeys(_ > data.frameCount- maxDelayFrame)
@@ -29,14 +30,15 @@ class GameClient(override val boundary: Point,override val window: Point) extend
     Protocol.GridDataSync(
       frameCount,
       playerMap.values.toList,
-      brickMap.map(i=>Brick(i._1.x,i._1.y,i._2)).toList
+      brickMap.map(i=>Brick(i._1.x,i._1.y,i._2)).toList,
+      addBallList
     )
   }
 
   //检查小球和木板碰撞，有动量守恒
   def checkBallPlayerCrash() = {}
 
-
+  def checkBallAddBllCrash() = {}
 
 
 }

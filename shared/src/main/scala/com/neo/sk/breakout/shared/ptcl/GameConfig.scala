@@ -16,6 +16,9 @@ object GameConfig {
   val brickW = 50
   val brickH = 25
 
+  //小球数量增加器
+  val addBallRadius: Short = 20
+
   //每次上升的高度
   val riseHeight = 60
 

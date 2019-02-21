@@ -198,11 +198,17 @@ class GameHolder {
           if(id == grid.myId)
             gameClose
         }
-
+      /**此时一轮游戏结束**/
       case Protocol.Bricks(brickMap) =>
         grid.brickMap = brickMap
-        grid.playerMap = grid.playerMap.map(i => i.copy(_2 = i._2.copy(ball = Ball(i._2.x, initBallRadius, i._2.x, initBallRadius))))
 
+      case Protocol.AddBall(addBallList) =>
+        grid.addBallList = addBallList
+
+      case Protocol.PlayerMap(playerMap) =>
+        grid.playerMap = playerMap
+
+        /******/
       case Protocol.PlayerCrash(player) =>
         grid.playerMap += (player.id -> player)
 
