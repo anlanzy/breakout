@@ -40,7 +40,7 @@ case class DrawGame(
   }
   //等待文字
   def drawGameWait(myId:String) ={
-    ctx.fillStyle = "rgba(99, 99, 99, 1)"
+    ctx.fillStyle = "#ffffff"
     ctx.font = "32px Helvetica"
     val wait = "Please wait"
     val waitWidth = ctx.measureText(wait).width
@@ -48,7 +48,7 @@ case class DrawGame(
   }
   //离线提示文字
   def drawGameLost: Unit = {
-    ctx.fillStyle = "rgba(99, 99, 99, 1)"
+    ctx.fillStyle = "#ffffff"
     ctx.font = "32px Helvetica"
     val lost = "Ops, connection lost"
     val lostWidth = ctx.measureText(lost).width
@@ -68,7 +68,7 @@ case class DrawGame(
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)"
     ctx.fillRect(0,0,bounds.x,bounds.y)
     ctx.font = "30px Helvetica"
-    ctx.fillStyle = "#464747"
+    ctx.fillStyle = "#ffffff"
     val text = "YOU DEAD"
     val textLength = ctx.measureText(text).width
     ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 15)
@@ -78,7 +78,8 @@ case class DrawGame(
     cleanCtx()
     val players = data.playerDetails
     val bricks = data.brickDetails
-    players.foreach{ case Player(id, name, x, color, ball)=>
+    val addBall = data.addBallDetails
+    players.foreach{ case Player(id, name, x, color, ballList)=>
       //小球
       ctx.fillStyle = color match {
         case 1 => "#fa8b28"
@@ -103,14 +104,16 @@ case class DrawGame(
         ctx.fillText(namefix, x + initBallRadius + 10, 20)
       }
       //小球
-      val ballX = ball.x + ball.speedX * offsetTime.toFloat/frameRate
-      val ballY = ball.y + ball.speedY * offsetTime.toFloat/frameRate
-      val xfix = if(ballX > bounds.x - initBallRadius) bounds.x-initBallRadius else
-      if(ballX < initBallRadius) initBallRadius else ballX
-      val yfix = if(ballY < initBallRadius)  initBallRadius else ballY
-      ctx.beginPath()
-      ctx.arc(xfix,yfix, initBallRadius,0,2 * Math.PI)
-      ctx.fill()
+      ballList.foreach(ball =>{
+        val ballX = ball.x + ball.speedX * offsetTime.toFloat/frameRate
+        val ballY = ball.y + ball.speedY * offsetTime.toFloat/frameRate
+        val xfix = if(ballX > bounds.x - initBallRadius) bounds.x-initBallRadius else
+        if(ballX < initBallRadius) initBallRadius else ballX
+        val yfix = if(ballY < initBallRadius && !ball.onBoard)  initBallRadius else ballY
+        ctx.beginPath()
+        ctx.arc(xfix,yfix, initBallRadius,0,2 * Math.PI)
+        ctx.fill()
+      })
     }
     //绘制砖块
     bricks.groupBy(_.nums).foreach{ a=>
@@ -133,6 +136,10 @@ case class DrawGame(
         }
       }
     }
+    //绘制增加小球符号
+    addBall.foreach(item =>{
+      ctx.drawImage(addBallImg, item.x, item.y, addBallRadius*2, addBallRadius*2)
+    })
   }
 
   def cleanCtx() = {

@@ -18,6 +18,7 @@ object GameConfig {
 
   //小球数量增加器
   val addBallRadius: Short = 20
+  val addBallHeight = 80
 
   //每次上升的高度
   val riseHeight = 60

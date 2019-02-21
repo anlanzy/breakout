@@ -41,7 +41,7 @@ object Game {
 //                   speed:Float = initBallSpeed,//TODO 存疑？
                    speedX:Float = 0,
                    speedY:Float = 0,
-//                   touchBorder : Boolean = false,//TODO 是否触碰边界
+                   onBoard : Boolean = true,
                  )
 
   case class Brick(

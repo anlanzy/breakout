@@ -40,7 +40,7 @@ trait Grid {
   var actionMap = Map.empty[Int, Map[String, KC]]
 
   //小球的鼠标事件 帧数->(用户ID -> 操作)
-  var ballMouseActionMap = Map.empty[Int, Map[String, MC]]
+  var ballMouseActionMap = Map.empty[String, MC]
 
   //用户离开，从列表中去掉
   def removePlayer(id: String): Option[Player] = {
@@ -58,28 +58,13 @@ trait Grid {
   }
 
   def addBallMouseActionWithFrame(id:String, mc:MC) = {
-    val map = ballMouseActionMap.getOrElse(mc.f, Map.empty)
-    val tmc = map + (id -> mc)
-    ballMouseActionMap += (mc.f -> tmc)
+    ballMouseActionMap += (id-> mc)
   }
 
-  def removeActionWithFrame(id: String, userAction: UserAction, frame: Int) = {
-    userAction match {
-      case k:KC=>
-        val map = actionMap.getOrElse(frame,Map.empty)
-        val actionQueue = map.filterNot(t => t._1 == id && k.sN == t._2.sN)
-        actionMap += (frame->actionQueue)
-      case m:MP=>
-        val map = ballMouseActionMap.getOrElse(frame,Map.empty)
-        val actionQueue = map.filterNot(t => t._1 == id && m.sN == t._2.sN)
-        ballMouseActionMap += (frame->actionQueue)
-    }
-  }
 
   def update() = {
     updateSpots()
     actionMap -= frameCount
-    ballMouseActionMap -= frameCount
     frameCount += 1
   }
 
@@ -93,7 +78,7 @@ trait Grid {
   //更新小球的位置
   def updateBall() = {
     val newPlayerMap = playerMap.values.map{ player =>
-      //小球从木板中弹出
+      //小球从上方直线下落，落到y = initBallRadius的时候开始执行鼠标事件
       val newPlayerBall = player.ball.map(ball =>{
         val newbeforeX = ball.x
         val newbeforeY = ball.y
@@ -101,18 +86,30 @@ trait Grid {
         var newY = (ball.y + ball.speedY).toInt
         var newspeedX = ball.speedX
         var newspeedY = ball.speedY
-        val mouseAct = ballMouseActionMap.getOrElse(frameCount, Map.empty[String, MC]).get(player.id)
+        var newonBoard = ball.onBoard
+        val mouseAct = ballMouseActionMap.get(player.id)
         if(mouseAct.isDefined){
-          val mouse = mouseAct.get
-          val deg = atan2(mouse.cY - ball.y, mouse.cX - ball.x)
-          newspeedX = (cos(deg) * initBallSpeed).toFloat
-          newspeedY = (sin(deg) *initBallSpeed).toFloat
+          if(newY<initBallRadius){
+            newspeedY = initBallSpeed
+          }
+          if(newY == initBallRadius && newonBoard){
+            val mouse = mouseAct.get
+            val deg = atan2(mouse.cY - ball.y, mouse.cX - ball.x)
+            newspeedX = (cos(deg) * initBallSpeed).toFloat
+            newspeedY = (sin(deg) *initBallSpeed).toFloat
+            newonBoard = false
+          }
         }
         /**边界碰撞检测**/
         if(newX > boundary.x - ball.radius) newX = boundary.x - ball.radius
         if(newX < ball.radius) newX = ball.radius
         if(newY < ball.radius) newY = ball.radius
-        ball.copy(newX,newY,newbeforeX,newbeforeY,initBallRadius,newspeedX,newspeedY)
+        if(newbeforeY < initBallRadius && newY>=initBallRadius){
+          newY = initBallRadius
+          newspeedX = 0
+          newspeedY = 0
+        }
+        ball.copy(x= newX,y = newY,beforeX = newbeforeX,beforeY = newbeforeY,speedX = newspeedX,speedY = newspeedY,onBoard=newonBoard)
       })
       player.copy(ball = newPlayerBall)
     }
@@ -207,16 +204,17 @@ trait Grid {
         val newPlayerBall = player.ball.map(ball =>{
           var newspeedX = ball.speedX
           var newspeedY = ball.speedY
-          checkTouchBoundary(Point(ball.x,ball.y),boundary) match{
-            case 1=>
-              newspeedX = - newspeedX
-            case 2=>
-              newspeedY = - newspeedY
-            case _=>
+          if(!ball.onBoard){
+            checkTouchBoundary(Point(ball.x,ball.y),boundary) match{
+              case 1=>
+                newspeedX = - newspeedX
+              case 2=>
+                newspeedY = - newspeedY
+              case _=>
+            }
           }
           ball.copy(speedX = newspeedX, speedY = newspeedY)
         })
-
         player.copy(ball = newPlayerBall)
     }
     playerMap = newPlayerMap.map(s=>(s.id,s)).toMap

@@ -37,6 +37,8 @@ class GameHolder {
   //游戏状态
   private[this] var  gameState = GameState.waiting
 
+  private[this] var ballDirection = true
+
 
   /**可变参数**/
   var nextInt = 0
@@ -136,12 +138,13 @@ class GameHolder {
     infoViewCanvas.focus()
     infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
       //球在木板上时选择方向发射
-      if(grid.playerMap.get(grid.myId).isDefined && grid.playerMap.get(grid.myId).get.ball.onBoard){
+      if(grid.playerMap.get(grid.myId).isDefined && ballDirection){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
         val pageY = e.pageY - (window.y/2 - bounds.y/2)
         mc = MC(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
         grid.addBallMouseActionWithFrame(grid.myId, mc)
         webSocketClient.sendMsg(mc)
+        ballDirection = false
       }
     }
   }
@@ -198,7 +201,7 @@ class GameHolder {
           if(id == grid.myId)
             gameClose
         }
-      /**此时一轮游戏结束**/
+      /**此时新的一轮开始**/
       case Protocol.Bricks(brickMap) =>
         grid.brickMap = brickMap
 
@@ -207,8 +210,9 @@ class GameHolder {
 
       case Protocol.PlayerMap(playerMap) =>
         grid.playerMap = playerMap
+        ballDirection = true
 
-        /******/
+      /******/
       case Protocol.PlayerCrash(player) =>
         grid.playerMap += (player.id -> player)
 

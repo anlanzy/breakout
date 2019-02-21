@@ -21,7 +21,6 @@ class GameClient(override val boundary: Point,override val window: Point) extend
   def setSyncGridData(data:GridDataSync): Unit = {
     frameCount = data.frameCount
     actionMap = actionMap.filterKeys(_ > data.frameCount- maxDelayFrame)
-    ballMouseActionMap = ballMouseActionMap.filterKeys(_ > data.frameCount-maxDelayFrame)
     playerMap = data.playerDetails.map(s => s.id -> s).toMap
     brickMap = data.brickDetails.map(b => Point(b.x,b.y) -> b.nums).toMap
   }
