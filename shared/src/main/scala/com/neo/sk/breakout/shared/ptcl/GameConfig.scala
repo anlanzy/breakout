@@ -10,7 +10,7 @@ object GameConfig {
 
   //玩家小球信息
   val initBallRadius:Short  = 8
-  val initBallSpeed = 30
+  val initBallSpeed = 40
 
   //砖块宽高
   val brickW = 50

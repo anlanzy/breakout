@@ -54,7 +54,7 @@ case class DrawGame(
 
   def drawBackground: Unit = {
     /**背景色**/
-    ctx.fillStyle = "#e6e7e6"
+    ctx.fillStyle = "#25313e"
     ctx.fillRect(0, 0, bounds.x, bounds.y)
     /**顶部的砖块**/
 
@@ -96,7 +96,7 @@ case class DrawGame(
       }else {
         //对方
         ctx.font = "20px Helvetica"
-        val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
+        val namefix = if(name.length > 8) name.substring(0, 7) + "*" else name
         ctx.fillText(namefix, x + initBallRadius + 10, 20)
       }
       //小球
@@ -112,18 +112,21 @@ case class DrawGame(
     //绘制砖块
     bricks.groupBy(_.nums).foreach{ a=>
       ctx.fillStyle = a._1 match {
-        case x if( x>=1 && x<=10) => "#a3dff8"
-        case x if( x>=11 && x<=20)=> "#fbde80"
+        case x if( x>=1 && x<=5) => "#01e2f6"
+        case x if( x>=6 && x<=10) => "#ebc445"
+        case x if( x>=11 && x<=20)=> "#f0855b"
         case x if( x>=21 && x<=30)=> "#69d17d"
-        case x if( x>=31 && x<=50)=> "#fb5f73"
+        case x if( x>=31 && x<=50)=> "#ee7483"
         case _  => "#830a19"
       }
       a._2.foreach{case Brick(x, y, nums)=>
         {
           ctx.font = "15px Helvetica"
           ctx.fillRect(x - brickW/2, y - brickH/2, brickW, brickH)
+          ctx.save()
           ctx.fillStyle = "#ffffff"
-          ctx.fillText(nums.toString, x-5,y)
+          ctx.fillText(nums.toString, x-5,y+5)
+          ctx.restore()
         }
       }
     }

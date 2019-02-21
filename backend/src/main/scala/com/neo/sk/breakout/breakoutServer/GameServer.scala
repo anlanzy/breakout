@@ -33,6 +33,8 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   implicit val sendBuffer = new MiddleBufferInJvm(81920)
 
 
+
+
   /**产生初始砖块**/
   generateGT()
 
@@ -47,8 +49,10 @@ class GameServer(override val boundary: Point,override val window: Point) extend
     brickMap = brickMap.map(i => i.copy(_1 = i._1.copy(y = i._1.y-riseHeight))).filter(_._1.y>= brickH/2)
     //每行1-4个
     //1-5 只产生1-10之间的  5-10 只产生 1-30之间的 10+ 都产生
+    //TODO 产生有点问题 砖块之间会重叠
+
     gameTurns match {
-      case x if(x>=1 && x <= 5) =>
+      case x if(x>=1 && x <= 4) =>
         val brickNums = random.nextInt(3).toShort + 1// 012 + 1
         for(i <-0 until brickNums){
           var pointx = random.nextInt(boundary.x - brickW) + brickW/2
@@ -61,24 +65,24 @@ class GameServer(override val boundary: Point,override val window: Point) extend
           val num  = (random.nextInt(10) + 1).toShort
           brickMap += Point(pointx,pointy) -> num
         }
-      case x if(x>=6 && x <= 10) =>
-        val brickNums = random.nextInt(4).toShort + 1// 0123 + 1
+      case x if(x>=5 && x <= 8) =>
+        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
         for(i <-0 until brickNums){
           var pointx = random.nextInt(boundary.x - brickW) + brickW/2
           var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-          while(!checkCross(brickMap,pointx,pointy)){
+          while(checkCross(brickMap,pointx,pointy)){
             pointx = random.nextInt(boundary.x - brickW) + brickW/2
             pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
           }
           val num  = (random.nextInt(30) + 1).toShort
           brickMap += Point(pointx,pointy) -> num
         }
-      case x if(x>=11) =>
-        val brickNums = random.nextInt(4).toShort + 1// 0123 + 1
+      case x if(x>=9) =>
+        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
         for(i <-0 until brickNums){
           var pointx = random.nextInt(boundary.x - brickW) + brickW/2
           var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-          while(!checkCross(brickMap,pointx,pointy)){
+          while(checkCross(brickMap,pointx,pointy)){
             pointx = random.nextInt(boundary.x - brickW) + brickW/2
             pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
           }
@@ -96,8 +100,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
     var cross = false
     if(!brickMap.isEmpty){
       brickMap.foreach(i =>{
-        if(math.abs(pointX-i._1.x)>=brickW || math.abs(pointY-i._1.y) >=brickH){
-          cross = false
+        if(math.abs(pointX-i._1.x) >= brickW || math.abs(pointY-i._1.y) >= brickH){
         }else{
           cross = true
         }
@@ -145,6 +148,8 @@ class GameServer(override val boundary: Point,override val window: Point) extend
     )
     if(updateTurns){
       generateGT
+      //让玩家的小球又产生
+      playerMap = playerMap.map(i => i.copy(_2 = i._2.copy(ball = Ball(i._2.x, initBallRadius, i._2.x, initBallRadius))))
     }
   }
 

@@ -135,6 +135,9 @@ trait Grid {
         var newX = ball.x
         var newY = ball.y
         var pointMap = Map.empty[Point,(Point,Int)] //砖块 ->(交点 -> 类型)（上下左右）
+        val distanceX = ball.x - ball.beforeX
+        val distanceY = ball.y - ball.beforeY
+        val deg = atan2(distanceY, distanceX)
         brickMap.toList.foreach{
           brick =>
             var x = checkCollisionNew(Point(ball.beforeX,ball.beforeY),Point(ball.x,ball.y),brick._1)
@@ -143,7 +146,6 @@ trait Grid {
             }
         }
           if(!pointMap.isEmpty){
-            println(pointMap)
             val i = pointMap.toList.sortBy(i=>sqrt(pow(i._2._1.y - ball.beforeY,2)+pow(i._2._1.x - ball.beforeX,2))).head
             //砖块i._1 ->(交点i._2._1 -> 类型i._2._2)（上下左右）
             i._2._2 match {
@@ -156,8 +158,8 @@ trait Grid {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
                 newspeedY = - newspeedY
-                newX = i._2._1.x
-                newY = i._2._1.y
+                newX = (i._2._1.x + initBallRadius/sin(deg) * cos(deg)).toInt
+                newY = i._2._1.y - initBallRadius
               case 2 =>
                 //右
                 if(brickMap(i._1) - 1==0){
@@ -166,8 +168,8 @@ trait Grid {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
                 newspeedX = - newspeedX
-                newX = i._2._1.x
-                newY = i._2._1.y
+                newX = i._2._1.x + initBallRadius
+                newY = (i._2._1.y + initBallRadius/cos(deg) * sin(deg)).toInt
               case 3 =>
                 //下
                 if(brickMap(i._1) - 1==0){
@@ -176,8 +178,8 @@ trait Grid {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
                 newspeedY = - newspeedY
-                newX = i._2._1.x
-                newY = i._2._1.y
+                newX = (i._2._1.x + initBallRadius/sin(deg) * cos(deg)).toInt
+                newY = i._2._1.y + initBallRadius
               case 4 =>
                 //左
                 if(brickMap(i._1) - 1==0){
@@ -186,8 +188,8 @@ trait Grid {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
                 newspeedX = - newspeedX
-                newX = i._2._1.x
-                newY = i._2._1.y
+                newX = i._2._1.x - initBallRadius
+                newY = (i._2._1.y + initBallRadius/cos(deg) * sin(deg)).toInt
               case x =>
             }
           }
