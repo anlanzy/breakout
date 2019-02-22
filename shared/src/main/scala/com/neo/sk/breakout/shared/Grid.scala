@@ -61,13 +61,11 @@ trait Grid {
     ballMouseActionMap += (id-> mc)
   }
 
-
   def update() = {
     updateSpots()
     actionMap -= frameCount
     frameCount += 1
   }
-
 
   private[this] def updateSpots() = {
     /**更新小球的位置**/
@@ -75,7 +73,6 @@ trait Grid {
     /**碰撞检测**/
     checkCrash()
   }
-
 
   //更新小球的位置
   def updateBall() = {

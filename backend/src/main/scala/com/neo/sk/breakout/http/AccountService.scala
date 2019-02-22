@@ -15,7 +15,6 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
 
-import com.neo.sk.breakout.models.SlickTables._
 /**
   * create by zhaoyin
   * 2019/2/22  4:13 PM

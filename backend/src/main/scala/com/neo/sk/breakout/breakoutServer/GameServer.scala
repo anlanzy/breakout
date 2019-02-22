@@ -35,9 +35,6 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   //玩家有几个小球（通过撞到增加小球符号可以增加小球）
   private var playerBallNums = Map.empty[String,Int]
 
-
-
-
   /**产生初始砖块**/
   generateGT()
 
@@ -202,10 +199,5 @@ class GameServer(override val boundary: Point,override val window: Point) extend
     })
     dispatch(subscriber)(Protocol.PlayerMap(playerMap))
   }
-
-
-
-
-
 
 }

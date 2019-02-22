@@ -17,11 +17,11 @@ import com.neo.sk.breakout.Boot.roomManager
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import com.neo.sk.breakout.core.UserActor.StartGame
 
-
 /**
   * create by zhaoyin
   * 2019/2/1  5:35 PM
   */
+
 object UserActor {
 
   private val log = LoggerFactory.getLogger(this.getClass)
