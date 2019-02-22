@@ -110,9 +110,6 @@ object utils {
       //2、求出直线与线段的交点
       //！！！！！sortBy默认是从小到大的排序
       val point = getIntersectPoint(beforeBall,ball,brick).toList.sortBy(i=>sqrt(pow(i._1.y - beforeBall.y,2)+pow(i._1.x - beforeBall.x,2)))
-      if(point.length>1){
-        println(point,beforeBall,ball)
-      }
       if(!point.isEmpty){
         pointMap = point.head
       }

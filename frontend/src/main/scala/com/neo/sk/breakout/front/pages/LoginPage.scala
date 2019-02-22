@@ -198,7 +198,7 @@ class LoginPage extends Page{
         {identityBody}
         {nickName}
         {passwordBody}
-        <div class="loginOrRegister" onclick={() => enter()}>{bodyName}</div>
+        <div class="loginOrRegister">{bodyName}</div>
         {anotherLogin}
       </div>
     </div>

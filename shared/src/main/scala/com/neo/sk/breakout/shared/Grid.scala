@@ -75,6 +75,8 @@ trait Grid {
     /**碰撞检测**/
     checkCrash()
   }
+
+
   //更新小球的位置
   def updateBall() = {
     val newPlayerMap = playerMap.values.map{ player =>
@@ -222,9 +224,5 @@ trait Grid {
 
   //检查小球和增加小球符号碰撞
   def checkBallAddBllCrash()
-
-
-
-
 
 }
