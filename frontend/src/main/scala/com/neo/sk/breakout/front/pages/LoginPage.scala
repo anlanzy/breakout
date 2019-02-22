@@ -23,7 +23,8 @@ class LoginPage extends Page{
 
   private val bodyName = Var("登录")
   private val nickName = Var(emptyHTML)
-  private var types = 1 //1:登录 2：注册 3: 游客登录 4：管理员登录
+  /**1:登录 2：注册 3: 游客登录 4：管理员登录**/
+  private var types = 1
   private var anotherLogin = Var(emptyHTML) //游客登录
   private var passwordBody = Var(emptyHTML) //输入密码
   private var loginType = Var("游客登录")
@@ -83,38 +84,70 @@ class LoginPage extends Page{
   private def enter() = {
     val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
     val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
-    if(types == 1){
-      //登录
-      val data = LoginReq(identity,password).asJson.noSpaces
-      Http.postJsonAndParse[LoginRsp](AccountRoute.loginRoute,data).map{rsp =>{
-        rsp match {
-          case Right(value)=>
-            if(value.errCode==0){
+    types match {
+      case 1 =>
+        val data = LoginReq(identity,password).asJson.noSpaces
+        Http.postJsonAndParse[LoginRsp](AccountRoute.loginRoute,data).map{rsp =>{
+          rsp match {
+            case Right(value)=>
+              if(value.errCode==0){
 
-            } else {
-              //TODO 显示账号或密码错误
-            }
-          case Left(e) =>
+              } else {
+                //TODO 显示账号或密码错误
+              }
+            case Left(e) =>
+          }
         }
-      }
-      }
-    }else{
-      //注册
-      val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
-      val data = RegisterReq(identity,nickname,password).asJson.noSpaces
-      Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>{
-        rsp match {
-          case Right(value)=>
-           if(value.errCode==0){
-
-           } else {
-             //TODO 显示账号或密码错误
-           }
-          case Left(e) =>
-
         }
-      }
-      }
+      case 2 =>
+        //TODO 先做注册
+        val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
+        val data = RegisterReq(identity,nickname,password).asJson.noSpaces
+        Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>{
+          rsp match {
+            case Right(value)=>
+              if(value.errCode==0){
+
+              } else {
+                //TODO 显示账号或密码错误
+              }
+            case Left(e) =>
+
+          }
+        }
+        }
+      case 3 =>
+        val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
+        val data = RegisterReq(identity,nickname,password).asJson.noSpaces
+        Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>{
+          rsp match {
+            case Right(value)=>
+              if(value.errCode==0){
+
+              } else {
+                //TODO 显示账号或密码错误
+              }
+            case Left(e) =>
+
+          }
+        }
+        }
+      case 4 =>
+        val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
+        val data = RegisterReq(identity,nickname,password).asJson.noSpaces
+        Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>{
+          rsp match {
+            case Right(value)=>
+              if(value.errCode==0){
+
+              } else {
+                //TODO 显示账号或密码错误
+              }
+            case Left(e) =>
+
+          }
+        }
+        }
     }
   }
 
@@ -165,7 +198,7 @@ class LoginPage extends Page{
         {identityBody}
         {nickName}
         {passwordBody}
-        <div class="loginOrRegister">{bodyName}</div>
+        <div class="loginOrRegister" onclick={() => enter()}>{bodyName}</div>
         {anotherLogin}
       </div>
     </div>
