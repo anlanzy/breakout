@@ -4,7 +4,17 @@ import com.neo.sk.breakout.front.common.Page
 import com.neo.sk.breakout.front.utils.Shortcut
 import mhtml._
 import scala.xml.Elem
-
+import org.scalajs.dom
+import org.scalajs.dom.ext.KeyCode
+import org.scalajs.dom.{KeyboardEvent, html}
+import org.scalajs.dom.html.Div
+import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
+import scala.concurrent.ExecutionContext.Implicits.global
+import com.neo.sk.breakout.front.utils.{Http, JsFunc}
+import io.circe.generic.auto._
+import io.circe._
+import io.circe.syntax._
+import com.neo.sk.breakout.front.common.Routes._
 /**
   * create by zhaoyin
   * 2019/2/22  10:10 AM
@@ -13,22 +23,129 @@ class LoginPage extends Page{
 
   private val bodyName = Var("登录")
   private val nickName = Var(emptyHTML)
+  private var types = 1 //1:登录 2：注册 3: 游客登录 4：管理员登录
+  private var anotherLogin = Var(emptyHTML) //游客登录
+  private var passwordBody = Var(emptyHTML) //输入密码
+  private var loginType = Var("游客登录")
+  private var identityBody = Var(emptyHTML) //输入邮箱/密码
 
+  //init
+  init()
+
+  private def init() = {
+    anotherLogin := <div class="anotherLogin" onclick={()=>changeLogin() }>{loginType}</div>
+    passwordBody :=
+      <div style="margin-bottom:20px">
+        <div>密码</div>
+        <input class="inputStyle" id="password"></input>
+      </div>
+    identityBody :=
+      <div style="margin-bottom:20px">
+        <div>手机号/邮箱</div>
+        <input class="inputStyle" placeholder="例如zhaoyin@ebupt.com" id="identity"></input>
+      </div>
+  }
 
   private def loginBody() = {
+    identityBody :=
+      <div style="margin-bottom:20px">
+        <div>手机号/邮箱</div>
+        <input class="inputStyle" placeholder="例如zhaoyin@ebupt.com" id="identity"></input>
+      </div>
     bodyName := "登录"
     nickName := emptyHTML
+    types = 1
+    loginType := "游客登录"
+    anotherLogin := <div class="anotherLogin" onclick={() =>changeLogin()}>{loginType}</div>
+    passwordBody :=
+      <div style="margin-bottom:20px">
+        <div>密码</div>
+        <input class="inputStyle" id="password"></input>
+      </div>
   }
 
   private def registerBody() = {
+    identityBody :=
+      <div style="margin-bottom:20px">
+        <div>手机号/邮箱</div>
+        <input class="inputStyle" placeholder="例如zhaoyin@ebupt.com" id="identity"></input>
+      </div>
+    anotherLogin := emptyHTML
     bodyName := "注册"
-
+    types = 2
     nickName :=
       <div style="margin-bottom:20px">
         <div>昵称</div>
-        <input class="inputStyle"></input>
+        <input class="inputStyle" id="nickname"></input>
       </div>
   }
+
+  private def enter() = {
+    val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
+    val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
+    if(types == 1){
+      //登录
+      val data = LoginReq(identity,password).asJson.noSpaces
+      Http.postJsonAndParse[LoginRsp](AccountRoute.loginRoute,data).map{rsp =>{
+        rsp match {
+          case Right(value)=>
+            if(value.errCode==0){
+
+            } else {
+              //TODO 显示账号或密码错误
+            }
+          case Left(e) =>
+        }
+      }
+      }
+    }else{
+      //注册
+      val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
+      val data = RegisterReq(identity,nickname,password).asJson.noSpaces
+      Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>{
+        rsp match {
+          case Right(value)=>
+           if(value.errCode==0){
+
+           } else {
+             //TODO 显示账号或密码错误
+           }
+          case Left(e) =>
+
+        }
+      }
+      }
+    }
+  }
+
+  private def changeLogin() = {
+    if(types == 1){
+      types = 3
+      loginType := "玩家登录"
+      passwordBody := emptyHTML
+      nickName :=
+        <div style="margin-bottom:20px">
+          <div>昵称</div>
+          <input class="inputStyle" id="nickname"></input>
+        </div>
+      identityBody := emptyHTML
+    } else {
+      types = 1
+      loginType := "游客登录"
+      passwordBody :=
+        <div style="margin-bottom:20px">
+          <div>密码</div>
+          <input class="inputStyle" id="password"></input>
+        </div>
+      identityBody :=
+        <div style="margin-bottom:20px">
+          <div>手机号/邮箱</div>
+          <input class="inputStyle" placeholder="例如zhaoyin@ebupt.com" id="identity"></input>
+        </div>
+      nickName := emptyHTML
+    }
+  }
+
 
   private val header =
     <div class="header">
@@ -45,16 +162,11 @@ class LoginPage extends Page{
     <div class="bodyAll">
       <div class="bodyStyle">
         <div style="font-size:30px;margin-bottom:20px;margin-top:10px">{bodyName}</div>
-        <div style="margin-bottom:20px">
-          <div>手机号/邮箱</div>
-          <input class="inputStyle" placeholder="例如zhaoyin@ebupt.com"></input>
-        </div>
+        {identityBody}
         {nickName}
-        <div style="margin-bottom:20px">
-          <div>密码</div>
-          <input class="inputStyle"></input>
-        </div>
+        {passwordBody}
         <div class="loginOrRegister">{bodyName}</div>
+        {anotherLogin}
       </div>
     </div>
 

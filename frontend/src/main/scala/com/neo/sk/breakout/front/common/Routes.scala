@@ -8,9 +8,12 @@ import org.scalajs.dom.html.Document
   */
 object Routes {
 
+
+  val base = "/breakout"
+
   object ApiRoute{
 
-    private val baseUrl = "/breakout/user"
+    private val baseUrl = base + "/user"
 
     private def playGame(playerId:String,
                          playerName:String,
@@ -23,12 +26,17 @@ object Routes {
                           playerId:String,
                           playerName:String,
                           playerType:Byte
-                          ):String = {
+                         ):String = {
       val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
       val wsUrl = playGame(playerId,playerName,playerType)
       s"$wsProtocol://${dom.document.location.host}$wsUrl"
     }
+  }
 
+  object AccountRoute{
+    val adminLoginRoute = base + "/account/adminLogin"
+    val registerRoute = base + "/account/register"
+    val loginRoute = base + "/account/login"
   }
 
 }

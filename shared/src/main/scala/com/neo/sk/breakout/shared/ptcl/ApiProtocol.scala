@@ -22,5 +22,25 @@ object ApiProtocol {
                                msg: String = "ok"
                              ) extends CommonRsp
 
+  //登录
+  case class LoginReq(
+                       idenTity:String,
+                       passWord:String
+                     )
+  case class LoginRsp(
+                       errCode:Int = 0,
+                       msg:String = "ok"
+                     )
+
+  //注册
+  case class RegisterReq(
+                          idenTity:String,
+                          nickName:String,
+                          passWord:String
+                        )
+  case class RegisterRsp(
+                          errCode:Int = 0,
+                          msg:String = "ok"
+                        )
 
 }
