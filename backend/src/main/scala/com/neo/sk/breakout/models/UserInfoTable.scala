@@ -31,5 +31,12 @@ object UserInfoRepo extends UserInfoTable {
   import com.neo.sk.breakout.utils.DBUtil.driver.api._
   import com.neo.sk.breakout.utils.DBUtil.db
 
+  def insertUserInfo(userInfo:UserInfo) = {
+    db.run(UserInfoTableQuery.insertOrUpdate(userInfo))
+  }
+
+  def checkIdentity(identity: String) = {
+    db.run(UserInfoTableQuery.filter(u => u.identity == identity).result.headOption)
+  }
 
 }

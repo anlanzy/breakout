@@ -14,6 +14,10 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
+import com.neo.sk.breakout.models.{UserInfoRepo,UserInfo}
+import scala.util.{Failure, Success}
+import com.neo.sk.breakout.Boot.{executor, scheduler, timeout, userManager}
+
 
 /**
   * create by zhaoyin
@@ -26,13 +30,29 @@ trait AccountService extends ServiceUtils with SessionBase {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  private def registerErrorRsp(msg:String) = ErrorRsp(100011,msg)
+  private def registerErrorRsp(msg:String) = ErrorRsp(100001,msg)
 
   private def register = (path("register") & post){
     entity(as[Either[Error,ApiProtocol.RegisterReq]]){
       case Right(req) =>
-        complete(registerErrorRsp(""))
-      case Left(error) =>
+        dealFutureResult{
+          UserInfoRepo.checkIdentity(req.idenTity).map{r=>
+            if(r.isDefined){
+              //该邮箱/手机号已经被注册，提示用户重新输入
+              complete(registerErrorRsp("该邮箱/手机已被注册，请重新输入！"))
+            }else{
+              dealFutureResult{
+                UserInfoRepo.insertUserInfo(UserInfo(-1,req.idenTity,req.nickName,req.passWord,0,false)).map{r=>
+                  complete(SuccessRsp())
+                }
+              }
+            }
+          }.recover{
+            case e:Exception =>
+              complete(registerErrorRsp("查找用户信息失败"))
+          }
+        }
+     case Left(error) =>
         log.debug(s"用户注册失败：${error}")
         complete(registerErrorRsp(s"用户注册失败：${error}"))
     }
