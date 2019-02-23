@@ -17,6 +17,7 @@ import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
 import com.neo.sk.breakout.models.{UserInfoRepo,UserInfo}
 import scala.util.{Failure, Success}
 import com.neo.sk.breakout.Boot.{executor, scheduler, timeout, userManager}
+import java.util.concurrent.atomic.AtomicInteger
 
 
 /**
@@ -30,7 +31,9 @@ trait AccountService extends ServiceUtils with SessionBase {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  private def registerErrorRsp(msg:String) = RegisterRsp(100001,msg)
+  private[this] val idGenerator = new AtomicInteger(1000000)
+
+  private def registerErrorRsp(identity:String,nickname:String) = RegisterRsp(100001,identity,nickname)
 
   private def register = (path("register") & post){
     entity(as[Either[Error,ApiProtocol.RegisterReq]]){
@@ -39,26 +42,26 @@ trait AccountService extends ServiceUtils with SessionBase {
           UserInfoRepo.checkIdentity(req.idenTity).map{r=>
             if(r.isDefined){
               //该邮箱/手机号已经被注册，提示用户重新输入
-              complete(registerErrorRsp("该邮箱/手机已被注册，请重新输入！"))
+              complete(registerErrorRsp(req.idenTity,"该邮箱/手机已被注册，请重新输入！"))
             }else{
               dealFutureResult{
                 UserInfoRepo.insertUserInfo(UserInfo(-1,req.idenTity,req.nickName,req.passWord,0,false)).map{r=>
-                  complete(RegisterRsp())
+                  complete(RegisterRsp(0,req.idenTity,req.nickName))
                 }
               }
             }
           }.recover{
             case e:Exception =>
-              complete(registerErrorRsp("查找用户信息失败"))
+              complete(registerErrorRsp(req.idenTity,"查找用户信息失败"))
           }
         }
      case Left(error) =>
         log.debug(s"用户注册失败：${error}")
-        complete(registerErrorRsp(s"注册失败：${error}"))
+        complete(registerErrorRsp("",s"注册失败：${error}"))
     }
   }
 
-  private def loginErrorRsp(msg:String) = LoginRsp(100001,msg)
+  private def loginErrorRsp(identity:String,nickname:String) = LoginRsp(100001,identity,nickname)
 
   private def login = (path("login") & post){
     entity(as[Either[Error,ApiProtocol.LoginReq]]){
@@ -66,21 +69,32 @@ trait AccountService extends ServiceUtils with SessionBase {
         dealFutureResult{
           UserInfoRepo.userLogin(req.idenTity,req.passWord).map{r=>
             if(r.isDefined){
-              complete(LoginRsp(0,r.get.nickname))
+              complete(LoginRsp(0,r.get.identity,r.get.nickname))
             }else{
-              complete(loginErrorRsp("登录失败"))
+              complete(loginErrorRsp(req.idenTity,"登录失败"))
             }
           }
         }
       case Left(error) =>
         log.debug(s"用户登录失败：${error}")
-        complete(registerErrorRsp(s"用户登录：${error}"))
+        complete(loginErrorRsp("",s"用户登录：${error}"))
+    }
+  }
+
+  private def tourist = (path("tourist") & post){
+    entity(as[Either[Error,ApiProtocol.TouristReq]]){
+      case Right(req) =>
+        val id = idGenerator.getAndIncrement()
+        complete(LoginRsp(0,"tourist_"+id,req.nickname))
+      case Left(error) =>
+        log.debug(s"游客登录失败：${error}")
+        complete(loginErrorRsp("",s"游客登录：${error}"))
     }
   }
 
   val accountRoutes: Route =
     pathPrefix("account") {
-      register ~ login
+      register ~ login ~ tourist
     }
 
 

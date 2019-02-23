@@ -6,26 +6,41 @@ import scala.xml.Elem
 import com.neo.sk.breakout.front.common.Page
 import com.neo.sk.breakout.front.common.Routes.ApiRoute
 import com.neo.sk.breakout.front.utils.Shortcut
-import com.neo.sk.breakout.front.core.WebSocketClient
-import com.neo.sk.breakout.shared.ptcl.Protocol.GameMessage
+import com.neo.sk.breakout.front.core.{GameHolder, WebSocketClient}
+import com.neo.sk.breakout.shared.ptcl.Protocol.{GameMessage, Room}
 import org.scalajs.dom.raw.{ErrorEvent, Event}
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import org.scalajs.dom
 import mhtml._
+import scala.xml.Node
+
 /**
   * create by zhaoyin
   * 2019/2/23  12:01 PM
   */
-class WorldPage(playerName:String,playerType:Byte) extends Page{
+class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
 
-  val webSocketClient = WebSocketClient(wsConnectSuccess,wsConnectError,wsMessageHandler,wsConnectClose)
-
+  var roomLists:Rx[Node] = Rx(emptyHTML)
 
   def init()={
     //建立websocket连接
-    val url = ApiRoute.getwpWebSocketUri(dom.document)
+    val gameHolder = new GameHolder
+    //直接建立websocket连接
+    gameHolder.joinGame(identity,playerName,playerType)
 
+    roomLists = gameHolder.roomInuse.map(i=>
+      <div>
+        {i.map(room=>
+        <div>
+          <div>{room.roomName}</div>
+          <div>{room.roomType}</div>
+          <div>{room.user}</div>
+        </div>
+      )}
+      </div>
+    )
   }
+
 
   def joinWorld = {
 
@@ -41,7 +56,7 @@ class WorldPage(playerName:String,playerType:Byte) extends Page{
       <div class="two">
         <div class="chooseWorld">
           <div style="font-size:25px">选择房间</div>
-          <div></div>
+          {roomLists}
           <div class="joinButton" onclick={() => joinWorld}>加入</div>
         </div>
         <div class="createWorld">
@@ -61,29 +76,5 @@ class WorldPage(playerName:String,playerType:Byte) extends Page{
     </div>
   }
 
-
-  private def wsMessageHandler(data:GameMessage):Unit = {
-    data match {
-      case Protocol.RoomInUse(roomList) =>
-
-      case x =>
-
-    }
-  }
-
-  private def wsConnectSuccess(e:Event) = {
-    println(s"连接服务器成功")
-    e
-  }
-
-  private def wsConnectError(e:ErrorEvent) = {
-    println("----wsConnectError")
-    e
-  }
-
-  private def wsConnectClose(e:Event) = {
-    println("last Ws close")
-    e
-  }
 
 }

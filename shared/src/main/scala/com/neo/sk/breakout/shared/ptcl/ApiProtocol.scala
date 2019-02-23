@@ -29,7 +29,8 @@ object ApiProtocol {
                      )
   case class LoginRsp(
                        errCode:Int = 0,
-                       msg:String = "ok"
+                       identity:String,
+                       nickname:String = "ok"
                      )
 
   //注册
@@ -40,8 +41,13 @@ object ApiProtocol {
                         )
   case class RegisterRsp(
                           errCode:Int = 0,
-                          msg:String = "ok"
+                          identity:String,
+                          nickname:String = "ok"
                         )
+
+  case class TouristReq(
+                       nickname:String
+                       )
 
 
 }

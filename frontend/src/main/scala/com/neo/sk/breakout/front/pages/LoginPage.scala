@@ -93,24 +93,26 @@ class LoginPage extends Page{
         Http.postJsonAndParse[LoginRsp](AccountRoute.loginRoute,data).map{rsp =>
           if(rsp.errCode==0){
             //跳转进入创建房间or选择房间页
-            dom.window.location.hash = s"#/world/${rsp.msg}/$types"
+            dom.window.location.hash = s"#/world/${rsp.identity}/${rsp.nickname}/$types"
           }
         }
       case 2 =>
+        //注册
         val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
         val data = RegisterReq(identity,nickname,password).asJson.noSpaces
         Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute, data).map{rsp =>
           if(rsp.errCode==0){
             //跳转进入创建房间or选择房间页
-            dom.window.location.hash = s"#/world/${rsp.msg}/$types"
+            dom.window.location.hash = s"#/world/${rsp.identity}/${rsp.nickname}/$types"
           }
         }
       case 3 =>
+        //游客
         val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
-        val data = RegisterReq(identity,nickname,password).asJson.noSpaces
-        Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>
+        val data = TouristReq(nickname).asJson.noSpaces
+        Http.postJsonAndParse[LoginRsp](AccountRoute.touristRoute,data).map{rsp =>
           if(rsp.errCode==0){
-
+            dom.window.location.hash = s"#/world/${rsp.identity}/${rsp.nickname}/$types"
           }
         }
       case 4 =>

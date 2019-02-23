@@ -13,9 +13,9 @@ import com.neo.sk.breakout.front.common.PageSwitcher
 object MainPage extends PageSwitcher{
 
   private val currentPage: Rx[Elem] = currentHashVar.map{
-    case "playGame" :: playerId :: playerName :: playerType :: Nil => new GamePage(playerId, playerName, playerType.toByte).render
-    case "world" :: playerName :: playerType :: Nil => new WorldPage(playerName, playerType.toByte).render
     case "login" :: Nil => new LoginPage().render
+    case "world" :: identity :: playerName :: playerType :: Nil => new WorldPage(identity, playerName, playerType.toByte).render
+    case "playGame" :: playerId :: playerName :: playerType :: Nil => new GamePage(playerId, playerName, playerType.toByte).render
     case x =>
       println(s"unknown hash: $x")
       <div>Error Page</div>

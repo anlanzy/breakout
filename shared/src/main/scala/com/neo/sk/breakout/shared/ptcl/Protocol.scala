@@ -76,7 +76,7 @@ object Protocol {
 
   case class PlayerMap(playerMap: Map[String,Player]) extends GameMessage
 
-  case class Room(roomId:String,user:List[String])
+  case class Room(roomId:String,roomName:String,roomType:Int,user:List[String])
 
   case class RoomInUse(roomList:List[Room]) extends GameMessage
 

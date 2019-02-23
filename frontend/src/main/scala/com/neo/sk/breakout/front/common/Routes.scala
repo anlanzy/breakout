@@ -43,6 +43,7 @@ object Routes {
     val adminLoginRoute = base + "/account/adminLogin"
     val registerRoute = base + "/account/register"
     val loginRoute = base + "/account/login"
+    val touristRoute = base + "/account/tourist"
   }
 
 }

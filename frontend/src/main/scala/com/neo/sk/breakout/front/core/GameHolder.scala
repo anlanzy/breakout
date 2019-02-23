@@ -12,11 +12,15 @@ import com.neo.sk.breakout.shared.ptcl.Game._
 import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import com.neo.sk.breakout.shared.ptcl.Protocol._
+import mhtml._
+
 /**
   * create by zhaoyin
   * 2019/1/31  5:13 PM
   */
 class GameHolder {
+
+  var roomInuse =  Var(List.empty[Room])
 
   val bounds = Point(Boundary.w, Boundary.h)
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
@@ -29,6 +33,7 @@ class GameHolder {
   private[this] val drawGameView=DrawGame(gameCtx,gameViewCanvas,bounds,window)
   private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds,window)
   private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,bounds,window)
+
 
 
 
@@ -72,8 +77,8 @@ class GameHolder {
     //开启websocket
     webSocketClient.setUp(url)
     //gameloop + gamerender
-    start()
-    addActionListenEvent
+// TODO   start()
+//  TODO  addActionListenEvent
   }
 
   def start(): Unit = {
@@ -201,6 +206,10 @@ class GameHolder {
           if(id == grid.myId)
             gameClose
         }
+
+      case Protocol.RoomInUse(roomList) =>
+        roomInuse := roomList
+
       /**此时新的一轮开始**/
       case Protocol.Bricks(brickMap) =>
         grid.brickMap = brickMap

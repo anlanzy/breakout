@@ -18,6 +18,7 @@ import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
 import akka.stream.OverflowStrategy
 import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
 import com.neo.sk.breakout.core.UserActor.JoinRoom
+import org.seekloud.byteobject.ByteObject._
 
 /**
   * create by zhaoyin
@@ -38,6 +39,7 @@ object RoomManager {
   private case object UnKnowAction extends Command
   case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command
   case object CompleteMsgFront extends Command
+  case class DispatchMsg(msg:Protocol.WsMsgSource) extends Command
 
   case class FailMsgFront(ex: Throwable) extends Command
 
@@ -140,12 +142,17 @@ object RoomManager {
             val roomIdGenerator = new AtomicLong(1L)
             //一开始没有可用房间  roomId->(playerId,playerId)
             val roomInUse = mutable.HashMap[Long,List[String]]()
-            idle(roomIdGenerator,roomInUse)
+            val subscribersMap = mutable.HashMap[String,ActorRef[Protocol.WsMsgSource]]()
+            idle(roomIdGenerator,roomInUse,subscribersMap)
         }
     }
   }
 
-  def idle(roomIdGenerator:AtomicLong,roomInUse:mutable.HashMap[Long,List[String]])(implicit timer:TimerScheduler[Command]) =
+  def idle(roomIdGenerator:AtomicLong,
+           roomInUse:mutable.HashMap[Long,List[String]],
+           subscribersMap:mutable.HashMap[String,ActorRef[Protocol.WsMsgSource]]
+          )
+          (implicit timer:TimerScheduler[Command]) =
     Behaviors.receive[Command]{
       (ctx, msg) =>
         msg match {
@@ -172,6 +179,7 @@ object RoomManager {
               roomInUse.put(roomId,List(playerInfo.userId))
               getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
             }
+            //TODO
             Behaviors.same
 
           case LeftRoom(playerInfo) =>
@@ -182,6 +190,7 @@ object RoomManager {
                 if(roomInUse(t._1).isEmpty) roomInUse.remove(t._1)
               case None => log.debug(s"该玩家不在任何房间")
             }
+            //TODO
             Behaviors.same
 
           case GetWorldWebSocketFlow(replyTo) =>
@@ -189,8 +198,10 @@ object RoomManager {
             Behaviors.same
 
           case FrontActor(frontActor) =>
-            //TODO
+            //TODO 向前端发送房间数
             ctx.watchWith(frontActor,WorldLeft(frontActor))
+            subscribersMap.put()
+            frontActor !
             Behaviors.same
 
           case x=>
@@ -206,4 +217,11 @@ object RoomManager {
       ctx.spawn(RoomActor.create(roomId),childName)
     }.upcast[RoomActor.Command]
   }
+
+  def dispatch(subscribers:mutable.HashMap[String,ActorRef[UserActor.Command]])(msg:Protocol.GameMessage)(implicit sendBuffer:MiddleBufferInJvm) = {
+    val isKillMsg = msg.isInstanceOf[Protocol.UserDeadMessage]
+    subscribers.values.foreach( _ ! UserActor.DispatchMsg(Protocol.Wrap(msg.asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result(),isKillMsg)))
+  }
+
+
 }
