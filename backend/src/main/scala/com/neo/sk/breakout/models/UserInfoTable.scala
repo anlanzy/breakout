@@ -36,7 +36,11 @@ object UserInfoRepo extends UserInfoTable {
   }
 
   def checkIdentity(identity: String) = {
-    db.run(UserInfoTableQuery.filter(u => u.identity == identity).result.headOption)
+    db.run(UserInfoTableQuery.filter(u => u.identity === identity).result.headOption)
+  }
+
+  def userLogin(identity: String,password:String) = {
+    db.run(UserInfoTableQuery.filter(u => u.identity===identity && u.password===password).result.headOption)
   }
 
 }

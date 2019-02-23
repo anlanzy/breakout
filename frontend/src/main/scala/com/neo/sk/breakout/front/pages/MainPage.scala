@@ -13,6 +13,7 @@ object MainPage extends PageSwitcher{
 
   private val currentPage: Rx[Elem] = currentHashVar.map{
     case "playGame" :: playerId :: playerName :: playerType :: Nil => new GamePage(playerId, playerName, playerType.toByte).render
+    case "world" :: playerName :: playerType :: Nil => new WorldPage(playerName, playerType.toByte).render
     case "login" :: Nil => new LoginPage().render
     case x =>
       println(s"unknown hash: $x")
@@ -28,4 +29,5 @@ object MainPage extends PageSwitcher{
       </div>
     mount(dom.document.body,page)
   }
+
 }

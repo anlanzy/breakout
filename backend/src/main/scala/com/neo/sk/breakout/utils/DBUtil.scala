@@ -1,9 +1,7 @@
 package com.neo.sk.breakout.utils
 
-import com.zaxxer.hikari.HikariDataSource
 import org.slf4j.LoggerFactory
-import slick.jdbc.PostgresProfile.api._
-import com.neo.sk.breakout.common.AppSettings._
+import com.zaxxer.hikari.HikariDataSource
 import slick.jdbc.H2Profile
 
 /**
@@ -12,20 +10,18 @@ import slick.jdbc.H2Profile
  * Time: 4:33 PM
  */
 object DBUtil {
+
   val log = LoggerFactory.getLogger(this.getClass)
   private val dataSource = createDataSource()
+
+  import com.neo.sk.breakout.common.AppSettings._
 
   private def createDataSource() = {
 
     val dataSource = new org.h2.jdbcx.JdbcDataSource()
-
-    //val dataSource = new MysqlDataSource()
-
-    log.info(s"connect to db: $slickUrl")
-    dataSource.setUrl(slickUrl)
+    dataSource.setURL(slickUrl)
     dataSource.setUser(slickUser)
     dataSource.setPassword(slickPassword)
-
     val hikariDS = new HikariDataSource()
     hikariDS.setDataSource(dataSource)
     hikariDS.setMaximumPoolSize(slickMaximumPoolSize)
@@ -38,7 +34,8 @@ object DBUtil {
 
   val driver = H2Profile
 
-  val db = Database.forDataSource(dataSource, Some(slickMaximumPoolSize))
+  import driver.api.Database
 
+  val db: Database = Database.forDataSource(dataSource, Some(slickMaximumPoolSize))
 
 }

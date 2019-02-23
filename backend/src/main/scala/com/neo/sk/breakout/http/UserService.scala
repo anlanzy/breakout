@@ -12,11 +12,12 @@ import akka.util.{ByteString, Timeout}
 import akka.actor.typed.scaladsl.AskPattern._
 import org.slf4j.LoggerFactory
 import io.circe.generic.auto._
+
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.neo.sk.breakout.http.SessionBase.BreakoutSession
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.common.Constant._
-import com.neo.sk.breakout.core.UserManager
+import com.neo.sk.breakout.core.{RoomManager, UserManager}
 import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
 /**
@@ -57,8 +58,17 @@ trait UserService extends ServiceUtils with SessionBase {
     }
   }
 
+  private def world = (path("world") & get){
+    val flowFuture:Future[Flow[Message,Message,Any]] = roomManager ? (RoomManager.GetWorldWebsocketFlow(_))
+    dealFutureResult(
+      flowFuture.map(r=>
+        handleWebSocketMessages(r)
+      )
+    )
+  }
+
   val userRoutes: Route =
     pathPrefix("user") {
-      playGame
+      playGame ~ world
     }
 }

@@ -6,11 +6,14 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.neo.sk.breakout.common.AppSettings
 import org.slf4j.LoggerFactory
-
+import akka.stream.scaladsl.Flow
 import scala.collection.mutable
 import com.neo.sk.breakout.core.UserActor._
 import com.neo.sk.breakout.ptcl.UserProtocol.BaseUserInfo
-
+import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
+import com.neo.sk.breakout.shared.ptcl.Protocol
+import akka.util.ByteString
+import akka.stream.{ActorAttributes, Supervision}
 
 /**
   * create by zhaoyin
@@ -23,6 +26,9 @@ object RoomManager {
   case object TimeKey
   case object TimeOut extends Command
   case class LeftRoom(playerInfo: BaseUserInfo) extends Command
+
+  final case class GetWorldWebsocketFlow(replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
+
 
 
   def create(): Behavior[Command] ={
@@ -78,11 +84,38 @@ object RoomManager {
             }
             Behaviors.same
 
+          case GetWorldWebsocketFlow(replyTo) =>
+            replyTo ! getWebSocketFlow()
+            Behaviors.same
+
           case x=>
             log.debug(s"msg can't handle with ${x}")
             Behaviors.unhandled
         }
     }
+
+  private def getWebSocketFlow():Flow[Message,Message,Any] = {
+    import org.seekloud.byteobject.ByteObject._
+
+    import scala.language.implicitConversions
+
+    Flow[Message]
+      .map{
+        case t:Protocol.Wrap =>
+          BinaryMessage.Strict(ByteString(t.ws))
+        case x =>
+          log.debug(s"akka stream receive unknown msg=${x}")
+          TextMessage.apply("")
+      }.withAttributes(ActorAttributes.supervisionStrategy(decider))
+  }
+
+  private val decider: Supervision.Decider = {
+    e: Throwable =>
+      e.printStackTrace()
+      log.error(s"ws stream failed with $e")
+      Supervision.Resume
+  }
+
 
 
   private def getRoomActor(ctx: ActorContext[Command],roomId:Long):ActorRef[RoomActor.Command] = {

@@ -30,7 +30,7 @@ trait AccountService extends ServiceUtils with SessionBase {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  private def registerErrorRsp(msg:String) = ErrorRsp(100001,msg)
+  private def registerErrorRsp(msg:String) = RegisterRsp(100001,msg)
 
   private def register = (path("register") & post){
     entity(as[Either[Error,ApiProtocol.RegisterReq]]){
@@ -43,7 +43,7 @@ trait AccountService extends ServiceUtils with SessionBase {
             }else{
               dealFutureResult{
                 UserInfoRepo.insertUserInfo(UserInfo(-1,req.idenTity,req.nickName,req.passWord,0,false)).map{r=>
-                  complete(SuccessRsp())
+                  complete(RegisterRsp())
                 }
               }
             }
@@ -54,13 +54,33 @@ trait AccountService extends ServiceUtils with SessionBase {
         }
      case Left(error) =>
         log.debug(s"用户注册失败：${error}")
-        complete(registerErrorRsp(s"用户注册失败：${error}"))
+        complete(registerErrorRsp(s"注册失败：${error}"))
+    }
+  }
+
+  private def loginErrorRsp(msg:String) = LoginRsp(100001,msg)
+
+  private def login = (path("login") & post){
+    entity(as[Either[Error,ApiProtocol.LoginReq]]){
+      case Right(req) =>
+        dealFutureResult{
+          UserInfoRepo.userLogin(req.idenTity,req.passWord).map{r=>
+            if(r.isDefined){
+              complete(LoginRsp(0,r.get.nickname))
+            }else{
+              complete(loginErrorRsp("登录失败"))
+            }
+          }
+        }
+      case Left(error) =>
+        log.debug(s"用户登录失败：${error}")
+        complete(registerErrorRsp(s"用户登录：${error}"))
     }
   }
 
   val accountRoutes: Route =
     pathPrefix("account") {
-      register
+      register ~ login
     }
 
 
