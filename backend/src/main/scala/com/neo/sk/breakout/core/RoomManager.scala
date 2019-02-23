@@ -8,28 +8,128 @@ import com.neo.sk.breakout.common.AppSettings
 import org.slf4j.LoggerFactory
 import akka.stream.scaladsl.Flow
 import scala.collection.mutable
-import com.neo.sk.breakout.core.UserActor._
 import com.neo.sk.breakout.ptcl.UserProtocol.BaseUserInfo
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import akka.util.ByteString
 import akka.stream.{ActorAttributes, Supervision}
+import akka.stream.scaladsl.Flow
+import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
+import akka.stream.OverflowStrategy
+import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
+import com.neo.sk.breakout.core.UserActor.JoinRoom
 
 /**
   * create by zhaoyin
   * 2019/2/1  5:34 PM
   */
 object RoomManager {
+
+  import org.seekloud.byteobject.MiddleBufferInJvm
+
   private val log=LoggerFactory.getLogger(this.getClass)
 
   trait Command
   case object TimeKey
   case object TimeOut extends Command
   case class LeftRoom(playerInfo: BaseUserInfo) extends Command
+  case class FrontActor(value: ActorRef[Protocol.WsMsgSource]) extends Command
+  case class WorldLeft[U](actorRef: ActorRef[U]) extends Command
+  private case object UnKnowAction extends Command
+  case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command
+  case object CompleteMsgFront extends Command
 
-  final case class GetWorldWebsocketFlow(replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
+  case class FailMsgFront(ex: Throwable) extends Command
 
+  /**创建websocket**/
+  final case class GetWorldWebSocketFlow(replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
 
+  private def sink(actor: ActorRef[RoomManager.Command]) = ActorSink.actorRef[Command](
+    ref = actor,
+    onCompleteMessage = CompleteMsgFront,
+    onFailureMessage = FailMsgFront.apply
+  )
+
+  private def getWebSocketFlow(roomManager: ActorRef[RoomManager.Command]):Flow[Message,Message,Any] = {
+    import org.seekloud.byteobject.ByteObject._
+
+    import scala.language.implicitConversions
+
+    implicit def parseJsonString2WsMsgFront(s:String): Option[Protocol.UserAction] = {
+
+      try {
+        import io.circe.generic.auto._
+        import io.circe.parser._
+        val wsMsg = decode[Protocol.UserAction](s).right.get
+        Some(wsMsg)
+      }catch {
+        case e: Exception =>
+          log.warn(s"parse front msg failed when json parse,s=${s}")
+          None
+      }
+    }
+
+    Flow[Message]
+      .collect {
+        case BinaryMessage.Strict(msg)=>
+          val buffer = new MiddleBufferInJvm(msg.asByteBuffer)
+          bytesDecode[Protocol.UserAction](buffer) match {
+            case Right(req) =>  RoomManager.WebSocketMsg(Some(req))
+            case Left(e) =>
+              log.error(s"decode binaryMessage failed,error:${e.message}")
+              RoomManager.WebSocketMsg(None)
+          }
+        case TextMessage.Strict(msg) =>
+          log.debug(s"msg from webSocket: $msg")
+          RoomManager.WebSocketMsg(None)
+
+        // unpack incoming WS text messages...
+        // This will lose (ignore) messages not received in one chunk (which is
+        // unlikely because chat messages are small) but absolutely possible
+      }
+      .via(RoomManager.flow(roomManager))
+      .map{
+        case t:Protocol.Wrap =>
+          BinaryMessage.Strict(ByteString(t.ws))
+        case x =>
+          log.debug(s"akka stream receive unknown msg=${x}")
+          TextMessage.apply("")
+      }.withAttributes(ActorAttributes.supervisionStrategy(decider))
+  }
+
+  private val decider: Supervision.Decider = {
+    e: Throwable =>
+      e.printStackTrace()
+      log.error(s"ws stream failed with $e")
+      Supervision.Resume
+  }
+
+  def flow(actor:ActorRef[RoomManager.Command]):Flow[WebSocketMsg, Protocol.WsMsgSource,Any] = {
+    val in = Flow[RoomManager.WebSocketMsg]
+      .map {a=>
+        val req = a.reqOpt.get
+        req match{
+          case _=>
+            UnKnowAction
+        }
+      }
+      .to(sink(actor))
+
+    val out =
+      ActorSource.actorRef[Protocol.WsMsgSource](
+        completionMatcher = {
+          case Protocol.CompleteMsgServer ⇒
+        },
+        failureMatcher = {
+          case Protocol.FailMsgServer(e)  ⇒ e
+        },
+        bufferSize = 128,
+        overflowStrategy = OverflowStrategy.dropHead
+      ).mapMaterializedValue(outActor => actor ! FrontActor(outActor))
+    Flow.fromSinkAndSource(in, out)
+  }
+
+  /**************/
 
   def create(): Behavior[Command] ={
     log.debug(s"RoomManager start...")
@@ -84,8 +184,13 @@ object RoomManager {
             }
             Behaviors.same
 
-          case GetWorldWebsocketFlow(replyTo) =>
-            replyTo ! getWebSocketFlow()
+          case GetWorldWebSocketFlow(replyTo) =>
+            replyTo ! getWebSocketFlow(roomManager)
+            Behaviors.same
+
+          case FrontActor(frontActor) =>
+            //TODO
+            ctx.watchWith(frontActor,WorldLeft(frontActor))
             Behaviors.same
 
           case x=>
@@ -93,29 +198,6 @@ object RoomManager {
             Behaviors.unhandled
         }
     }
-
-  private def getWebSocketFlow():Flow[Message,Message,Any] = {
-    import org.seekloud.byteobject.ByteObject._
-
-    import scala.language.implicitConversions
-
-    Flow[Message]
-      .map{
-        case t:Protocol.Wrap =>
-          BinaryMessage.Strict(ByteString(t.ws))
-        case x =>
-          log.debug(s"akka stream receive unknown msg=${x}")
-          TextMessage.apply("")
-      }.withAttributes(ActorAttributes.supervisionStrategy(decider))
-  }
-
-  private val decider: Supervision.Decider = {
-    e: Throwable =>
-      e.printStackTrace()
-      log.error(s"ws stream failed with $e")
-      Supervision.Resume
-  }
-
 
 
   private def getRoomActor(ctx: ActorContext[Command],roomId:Long):ActorRef[RoomActor.Command] = {

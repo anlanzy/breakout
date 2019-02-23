@@ -3,6 +3,7 @@ package com.neo.sk.breakout.front.pages
 import mhtml._
 import org.scalajs.dom
 import scala.xml.Elem
+import java.net.URLEncoder
 
 import com.neo.sk.breakout.front.common.PageSwitcher
 /**

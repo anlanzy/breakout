@@ -16,10 +16,12 @@ import io.circe.generic.auto._
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import com.neo.sk.breakout.http.SessionBase.BreakoutSession
 import com.neo.sk.breakout.ptcl.UserProtocol._
+import com.neo.sk.breakout.shared.ptcl.Protocol
 import com.neo.sk.breakout.common.Constant._
 import com.neo.sk.breakout.core.{RoomManager, UserManager}
 import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
 import com.neo.sk.breakout.shared.ptcl.ApiProtocol._
+
 /**
   * create by zhaoyin
   * 2019/2/1  5:11 PM
@@ -59,11 +61,9 @@ trait UserService extends ServiceUtils with SessionBase {
   }
 
   private def world = (path("world") & get){
-    val flowFuture:Future[Flow[Message,Message,Any]] = roomManager ? (RoomManager.GetWorldWebsocketFlow(_))
+    val flowFuture:Future[Flow[Message,Message,Any]] = roomManager ? (RoomManager.GetWorldWebSocketFlow(_))
     dealFutureResult(
-      flowFuture.map(r=>
-        handleWebSocketMessages(r)
-      )
+       flowFuture.map(r=> handleWebSocketMessages(r))
     )
   }
 
