@@ -17,18 +17,29 @@ object Routes {
 
     private def playGame(playerId:String,
                          playerName:String,
-                         playerType:Byte
+                         playerType:Byte,
+                         roomId:Option[Long],
+                         roomName:Option[String],
+                         roomType:Option[Int]
                         ) =
-      baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType"
+      if(roomId==None){
+        baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType&roomName=${roomName.get}&roomType=${roomType.get}"
+      }else{
+        baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType&roomId=$roomId&roomName=${roomName.get}&roomType=${roomType.get}"
+
+      }
 
 
     def getpgWebSocketUri(document: Document,
                           playerId:String,
                           playerName:String,
-                          playerType:Byte
+                          playerType:Byte,
+                          roomId:Option[Long],
+                          roomName:Option[String],
+                          roomType:Option[Int]
                          ):String = {
       val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
-      val wsUrl = playGame(playerId,playerName,playerType)
+      val wsUrl = playGame(playerId,playerName,playerType,roomId,roomName,roomType)
       s"$wsProtocol://${dom.document.location.host}$wsUrl"
     }
 
@@ -37,6 +48,8 @@ object Routes {
       val wsProtocol = if (dom.document.location.protocol == "https:") "wss" else "ws"
       s"$wsProtocol://${dom.document.location.host}/$baseUrl/world"
     }
+    val worldList = baseUrl + "/world"
+
   }
 
   object AccountRoute{
@@ -45,5 +58,6 @@ object Routes {
     val loginRoute = base + "/account/login"
     val touristRoute = base + "/account/tourist"
   }
+
 
 }

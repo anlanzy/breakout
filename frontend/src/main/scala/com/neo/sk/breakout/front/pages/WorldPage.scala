@@ -8,38 +8,55 @@ import com.neo.sk.breakout.front.common.Routes.ApiRoute
 import com.neo.sk.breakout.front.utils.Shortcut
 import com.neo.sk.breakout.front.core.{GameHolder, WebSocketClient}
 import org.scalajs.dom.raw.{ErrorEvent, Event}
+import com.neo.sk.breakout.shared.ptcl.ApiProtocol
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import org.scalajs.dom
 import mhtml._
 import scala.xml.Node
-import com.neo.sk.breakout.front.core.GameHolder
-
+import com.neo.sk.breakout.front.utils.{Http, JsFunc}
+import com.neo.sk.breakout.front.common.Routes._
+import io.circe.generic.auto._
+import io.circe._
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * create by zhaoyin
   * 2019/2/23  12:01 PM
   */
-class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
+class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page {
 
-  var roomLists:Rx[Node] = Rx(emptyHTML)
+  var roomInuse =  Var(List.empty[(Long,(String,Int,List[String]))])
+
+  var roomId = None
   var roomType = 0 //1:合作  2：竞争
+  var roomTypeVar = Var(0)
+  var roomName = None
+
   var chooseRoomId = 0l
   var roomPlayerNum = 1
+  var roomLists:Rx[Node] = roomInuse.map(roomList=>
+    <div>
+      {roomList.map(room => <div></div>)}
+    </div>
+  )
+  val cooperation = roomTypeVar.map(i=>if(i==1){
+    <img src="/breakout/static/img/cooperationC.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
+  }else {
+    <img src="/breakout/static/img/cooperation.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
+  }
+  )
+  val compete = roomTypeVar.map(i=> if(i==2){
+    <img src="/breakout/static/img/competeC.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(2)}></img>
+  }else{
+    <img src="/breakout/static/img/compete.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(2)}></img>
+  })
 
-  def init()={
-    //建立websocket连接
-    GameHolder.joinGame(identity,playerName,playerType)
-
-    roomLists = GameHolder.roomInuse.map(i=>
-      <div class="roomContain">
-        {i.map(room=>
-        <div onclick={()=>chooseRoom(room._1,room._2._3.length)}>
-          <div>{room._2._1}</div>
-          <div>{room._2._2}</div>
-          <div>{room._2._3.length}/2</div>
-        </div>
-      )}
-      </div>
-    )
+  def init():Unit={
+    //获取当前房间列表
+    Http.getAndParse[ApiProtocol.RoomInUse](ApiRoute.worldList).map{rsp=>
+      if(rsp.errCode==0){
+        roomInuse := rsp.roomList.toList
+      }
+    }
   }
   def chooseRoom(roomId:Long,playerNum:Int) = {
     chooseRoomId = roomId
@@ -51,22 +68,21 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
   def joinWorld = {
     //判断该房间是否满员
     if(roomPlayerNum<2){
-      GameHolder.webSocketClient.sendMsg(Protocol.JoinRoom(chooseRoomId))
-      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType"
+      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType/$roomId/0/0"
     }
   }
 
   def createWold = {
     val roomName = dom.window.document.getElementById("roomName").asInstanceOf[html.Input].value
-    if(!roomName.isEmpty&&roomType!=0){
-      GameHolder.webSocketClient.sendMsg(Protocol.CreateRoom(roomName,roomType))
-      //跳转到GamePage页
-      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType"
+    if(roomName.length >0 && roomType!=0){
+      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType/-1/$roomName/$roomType"
     }
-  }
+    }
+
 
   def chooseRoomType(types:Int)={
     roomType = types
+    roomTypeVar := types
   }
 
   override def render: Elem = {
@@ -75,6 +91,7 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
       <div class="two">
         <div class="chooseWorld">
           <div style="font-size:25px">选择房间</div>
+          <div onclick={()=>init()}>刷新</div>
           {roomLists}
           <div class="joinButton" onclick={() => joinWorld}>加入</div>
         </div>
@@ -85,8 +102,8 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
             <div style="margin:10px auto;font-size:20px;text-align:center">{playerName}</div>
             <input id="roomName" placeholder="请输入您的房间名" class="inputStyle" style="margin:15px 0;height:40px;font-size:18px"></input>
             <div class="worldTypes">
-              <img src="/breakout/static/img/cooperation.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
-              <img src="/breakout/static/img/compete.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(2)}></img>
+              {cooperation}
+              {compete}
             </div>
           </div>
           <div class="createButton"  onclick={() => createWold}>创建</div>

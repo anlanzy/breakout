@@ -49,5 +49,10 @@ object ApiProtocol {
                        nickname:String
                        )
 
+  case class RoomInUse(
+                        errCode:Int = 0,
+                        roomList: Map[Long, (String, Int, List[String])]
+                      )
+
 
 }

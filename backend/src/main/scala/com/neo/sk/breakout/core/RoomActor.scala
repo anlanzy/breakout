@@ -40,7 +40,6 @@ object RoomActor {
 
   case class MouseRClick(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
 
-
   def create(roomId:Long):Behavior[Command] = {
     log.info(s"RoomActor-$roomId start...")
     Behaviors.setup[Command]{ ctx =>
@@ -131,6 +130,7 @@ object RoomActor {
   def dispatchTo(subscribers:mutable.HashMap[String,ActorRef[UserActor.Command]])(id:String,msg:Protocol.GameMessage)(implicit sendBuffer:MiddleBufferInJvm) = {
     val isKillMsg = msg.isInstanceOf[Protocol.UserDeadMessage]
     subscribers.get(id).foreach( _ ! UserActor.DispatchMsg(Protocol.Wrap(msg.asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result(),isKillMsg)))
+
   }
 
 

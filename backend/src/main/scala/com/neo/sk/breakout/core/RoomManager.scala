@@ -11,7 +11,7 @@ import akka.stream.scaladsl.Flow
 import scala.collection.mutable
 import com.neo.sk.breakout.ptcl.UserProtocol.BaseUserInfo
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
-import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.shared.ptcl.{ApiProtocol, Protocol}
 import akka.util.ByteString
 import akka.stream.{ActorAttributes, Supervision}
 import akka.stream.scaladsl.Flow
@@ -19,6 +19,7 @@ import akka.stream.typed.scaladsl.{ActorSink, ActorSource}
 import akka.stream.OverflowStrategy
 import com.neo.sk.breakout.Boot.{executor, roomManager, timeout, userManager}
 import com.neo.sk.breakout.core.UserActor.{CreateRoom, JoinRoom}
+import com.neo.sk.breakout.shared.ptcl.ApiProtocol.RoomInUse
 import org.seekloud.byteobject.ByteObject._
 
 /**
@@ -38,7 +39,7 @@ object RoomManager {
   case class FrontActor(value: ActorRef[Protocol.WsMsgSource]) extends Command
   case class WorldLeft[U](actorRef: ActorRef[U]) extends Command
   case class CreateRoom(roomName:String,types:Int,playerInfo: BaseUserInfo,userActor:ActorRef[UserActor.Command]) extends Command
-  case class RoomInUse(roomInuse: mutable.HashMap[Long, (String, Int, List[String])]) extends Command with UserActor.Command
+  case class GetRoomList(replyTo:ActorRef[RoomInUse]) extends Command
 
 
   def create(): Behavior[Command] ={
@@ -64,19 +65,25 @@ object RoomManager {
     Behaviors.receive[Command]{
       (ctx, msg) =>
         msg match {
-          case CreateRoom(roomName,types,playerInfo,userActor) =>
-            var roomId = roomIdGenerator.getAndIncrement()
-            while(roomInUse.exists(_._1 == roomId))roomId = roomIdGenerator.getAndIncrement()
-            roomInUse.put(roomId,(roomName,types,List(playerInfo.userId)))
-            getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
-            userActor ! RoomManager.RoomInUse(roomInUse)
-            Behaviors.same
+          case JoinRoom(playerInfo,roomInfo,userActor) =>
+            //如果roomIdOpt不存在，则是创建房间，否则加入房间
+            roomInfo.roomId match{
+              case Some(roomId) =>
+                roomInUse.get(roomId) match {
+                  case Some(ls) =>
+                    if(ls._3.length<2){
+                      roomInUse.put(roomId,(ls._1,ls._2,playerInfo.userId::ls._3))
+                      getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
+                    }
+                  case None =>
 
-          case UserActor.JoinRoomWithInfo(playerInfo,roomId,userActor) =>
-            if(roomInUse.get(roomId).isDefined&&roomInUse(roomId)._3.length<2){
-              roomInUse.put(roomId,(roomInUse(roomId)._1,roomInUse(roomId)._2, playerInfo.userId :: roomInUse(roomId)._3))
-              getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
-              userActor ! RoomManager.RoomInUse(roomInUse)
+                }
+              case None =>
+                var roomId = roomIdGenerator.getAndIncrement()
+                while(roomInUse.exists(_._1 == roomId))roomId = roomIdGenerator.getAndIncrement()
+                roomInUse.put(roomId,(roomInfo.roomName.get,roomInfo.roomType.get,List(playerInfo.userId)))
+                getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
+
             }
             Behaviors.same
 
@@ -88,6 +95,10 @@ object RoomManager {
                 if(roomInUse(t._1)._3.isEmpty) roomInUse.remove(t._1)
               case None => log.debug(s"该玩家不在任何房间")
             }
+            Behaviors.same
+
+          case msg:GetRoomList =>
+            msg.replyTo ! ApiProtocol.RoomInUse(0,roomInUse.toMap)
             Behaviors.same
 
 

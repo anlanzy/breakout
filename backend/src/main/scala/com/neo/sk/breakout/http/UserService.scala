@@ -45,11 +45,14 @@ trait UserService extends ServiceUtils with SessionBase {
       'playerId.as[String],
       'playerName.as[String],
       'playerType.as[Byte],
-      'roomId.as[Long].?
-    ){case ( playerId, playerName, playType, roomIdOpt) =>
+      'roomId.as[Long].?,
+      'roomName.as[String].?,
+      'roomType.as[Int].?
+    ){case ( playerId, playerName, playType, roomIdOpt,roomNameOpt,roomTypeOpt) =>
+      println("llalallaall")
       //TODO 1、不应该在这里才建立session的 2、根据playerType来选择玩家类型（会员or游客）
       val session = BreakoutSession(BaseUserInfo(UserRolesType.tourist, playerId, playerName), System.currentTimeMillis()).toSessionMap
-      val flowFuture:Future[Flow[Message,Message,Any]]= userManager ? (UserManager.GetWebSocketFlow(Some(BaseUserInfo(UserRolesType.tourist,playerId,playerName)),roomIdOpt,_))
+      val flowFuture:Future[Flow[Message,Message,Any]]= userManager ? (UserManager.GetWebSocketFlow(Some(BaseUserInfo(UserRolesType.tourist,playerId,playerName)),RoomInfo(roomIdOpt,roomNameOpt,roomTypeOpt),_))
       dealFutureResult(
         flowFuture.map(r=>
           addSession(session) {
@@ -60,9 +63,18 @@ trait UserService extends ServiceUtils with SessionBase {
     }
   }
 
+  private def world = (path("world") & get){
+    dealFutureResult{
+      val msgFuture: Future[RoomInUse] = roomManager ? (RoomManager.GetRoomList(_))
+      msgFuture.map {
+        msg => complete(msg)
+      }
+    }
+  }
+
 
   val userRoutes: Route =
     pathPrefix("user") {
-      playGame
+      playGame ~ world
     }
 }

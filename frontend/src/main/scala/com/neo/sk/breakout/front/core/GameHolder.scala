@@ -18,9 +18,7 @@ import mhtml._
   * create by zhaoyin
   * 2019/1/31  5:13 PM
   */
-object GameHolder {
-
-  var roomInuse =  Var(List.empty[(Long,(String,Int,List[String]))])
+class GameHolder {
 
   val bounds = Point(Boundary.w, Boundary.h)
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
@@ -71,11 +69,16 @@ object GameHolder {
 
   def joinGame(playerId: String,
                playerName:String,
-               playerType:Byte
+               playerType:Byte,
+               roomId:Option[Long],
+               roomName:Option[String],
+               roomType:Option[Int]
               ):Unit = {
-    val url = ApiRoute.getpgWebSocketUri(dom.document,playerId,playerName,playerType)
+    val url = ApiRoute.getpgWebSocketUri(dom.document,playerId,playerName,playerType,roomId,roomName,roomType)
     //开启websocket
     webSocketClient.setUp(url)
+    start()
+    addActionListenEvent
   }
 
   def start(): Unit = {
@@ -86,7 +89,6 @@ object GameHolder {
       */
     nextInt=dom.window.setInterval(() => gameLoop, frameRate)
     dom.window.requestAnimationFrame(gameRender())
-    addActionListenEvent
   }
 
   //不同步就更新，同步就设置为不同步
@@ -205,9 +207,6 @@ object GameHolder {
             gameClose
         }
 
-      case Protocol.RoomInUse(roomList) =>
-        roomInuse := roomList.toList
-
       /**此时新的一轮开始**/
       case Protocol.Bricks(brickMap) =>
         grid.brickMap = brickMap
@@ -236,18 +235,11 @@ object GameHolder {
   }
 
   private def wsConnectError(e:ErrorEvent) = {
-    val playground = dom.document.getElementById("playground")
     println("----wsConnectError")
     drawGameView.drawGameLost
-    playground.insertBefore(paraGraph(s"Failed: code: ${e.colno}"), playground.firstChild)
     e
   }
 
-  def paraGraph(msg: String) = {
-    val paragraph = dom.document.createElement("p")
-    paragraph.innerHTML = msg
-    paragraph
-  }
 
   private def wsConnectClose(e:Event) = {
     println("last Ws close")

@@ -15,6 +15,7 @@ import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.Boot.roomManager
 import com.neo.sk.breakout.shared.ptcl.Protocol
+import com.neo.sk.breakout.core.UserActor.StartGame
 
 /**
   * create by zhaoyin
@@ -37,13 +38,13 @@ object UserActor {
 
   case class DispatchMsg(msg:Protocol.WsMsgSource) extends Command
 
-  case class JoinRoomWithInfo(playerInfo: BaseUserInfo,roomId:Long,userActor:ActorRef[UserActor.Command]) extends Command with RoomManager.Command
+  case class JoinRoom(playerInfo: BaseUserInfo,roomInfo:RoomInfo,userActor:ActorRef[UserActor.Command]) extends Command with RoomManager.Command
 
   case class WebSocketMsg(reqOpt: Option[Protocol.UserAction]) extends Command
 
   case class TimeOut(msg: String) extends Command
 
-  case class JoinRoom(roomId:Long) extends Command
+  case class StartGame(roomInfo:RoomInfo) extends Command
 
   case object CompleteMsgFront extends Command
 
@@ -178,21 +179,13 @@ object UserActor {
                   ):Behavior[Command] =
     Behaviors.receive[Command]{(ctx,msg) =>
       msg match {
-        case CreateRoom(roomName,types) =>
-          roomManager ! RoomManager.CreateRoom(roomName,types,userInfo,ctx.self)
-          Behaviors.same
-
-        case JoinRoom(roomId) =>
-          roomManager ! UserActor.JoinRoomWithInfo(userInfo,roomId,ctx.self)
+        case StartGame(roomInfo) =>
+          roomManager ! UserActor.JoinRoom(userInfo,roomInfo,ctx.self)
           Behaviors.same
 
         case JoinRoomSuccess(roomId,roomActor)=>
           frontActor ! Protocol.Wrap(Protocol.JoinRoomSuccess(userInfo.userId,roomId).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
           switchBehavior(ctx,"play",play(userInfo,frontActor,roomActor))
-
-        case RoomManager.RoomInUse(roomInuse) =>
-          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
-          Behaviors.same
 
         case UserLeft(actor) =>
           ctx.unwatch(actor)
@@ -223,10 +216,6 @@ object UserActor {
                   ): Behavior[Command] =
     Behaviors.receive[Command]{ (ctx, msg) =>
       msg match {
-        case RoomManager.RoomInUse(roomInuse) =>
-          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
-          Behaviors.same
-
         case Key(keyCode,frame,n) =>
           roomActor ! RoomActor.KeyR(userInfo.userId, keyCode,frame,n)
           Behaviors.same

@@ -73,6 +73,4 @@ object AppSettings {
   val hestiaSecureKey = hestiaConfig.getString("secureKey")
   val hestiaAddress = hestiaConfig.getString("address")
 
-
-
 }

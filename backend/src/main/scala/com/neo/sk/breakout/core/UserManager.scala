@@ -8,6 +8,7 @@ import akka.stream.{ActorAttributes, Supervision}
 import akka.util.ByteString
 import org.slf4j.LoggerFactory
 import com.neo.sk.breakout.ptcl.UserProtocol
+import com.neo.sk.breakout.ptcl.UserProtocol.RoomInfo
 import com.neo.sk.breakout.shared.ptcl.Protocol
 /**
   * create by zhaoyin
@@ -23,7 +24,7 @@ object UserManager {
 
   final case class ChildDead[U](name: String, childRef: ActorRef[U]) extends Command
 
-  final case class GetWebSocketFlow(playerInfo: Option[UserProtocol.BaseUserInfo] = None, roomIdOpt:Option[Long] = None, replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
+  final case class GetWebSocketFlow(playerInfo: Option[UserProtocol.BaseUserInfo] = None, roomInfo:RoomInfo, replyTo:ActorRef[Flow[Message,Message,Any]]) extends Command
 
   def create(): Behavior[Command] = {
     log.debug(s"UserManager start...")
@@ -41,7 +42,7 @@ object UserManager {
   ):Behavior[Command] = {
     Behaviors.receive[Command]{(ctx, msg) =>
       msg match {
-        case GetWebSocketFlow(playerInfoOpt,roomIdOpt,replyTo) =>
+        case GetWebSocketFlow(playerInfoOpt,roomInfo,replyTo) =>
           val playerInfo = playerInfoOpt.get
           getUserActorOpt(ctx, playerInfo.userId) match {
             case Some(userActor) =>
@@ -50,7 +51,7 @@ object UserManager {
           }
           val userActor = getUserActor(ctx,playerInfo)
           replyTo ! getWebSocketFlow(playerInfo,userActor)
-//          userActor ! UserActor.StartGame(roomIdOpt)
+          userActor ! UserActor.StartGame(roomInfo)
           Behaviors.same
       }
     }

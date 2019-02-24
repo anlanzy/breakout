@@ -10,4 +10,9 @@ object UserProtocol {
                            userId: String,
                            userName: String
                          )
+  case class RoomInfo(
+                     roomId:Option[Long],
+                     roomName:Option[String],
+                     roomType:Option[Int]
+                     )
 }

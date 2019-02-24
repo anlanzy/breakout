@@ -76,8 +76,6 @@ object Protocol {
 
   case class PlayerMap(playerMap: Map[String,Player]) extends GameMessage
 
-  case class RoomInUse(roomList: mutable.HashMap[Long, (String, Int, List[String])]) extends GameMessage
-
   /**
     * 前端发送的数据--------------------------------------
     * */
