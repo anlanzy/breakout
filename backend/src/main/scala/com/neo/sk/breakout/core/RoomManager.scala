@@ -76,7 +76,6 @@ object RoomManager {
                       getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
                     }
                   case None =>
-
                 }
               case None =>
                 var roomId = roomIdGenerator.getAndIncrement()

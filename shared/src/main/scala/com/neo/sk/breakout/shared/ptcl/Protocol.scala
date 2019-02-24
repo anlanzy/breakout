@@ -76,6 +76,8 @@ object Protocol {
 
   case class PlayerMap(playerMap: Map[String,Player]) extends GameMessage
 
+  case class GameOver() extends GameMessage
+
   /**
     * 前端发送的数据--------------------------------------
     * */

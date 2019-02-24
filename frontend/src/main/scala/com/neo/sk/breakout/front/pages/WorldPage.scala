@@ -72,15 +72,15 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page 
     }
   }
   val cooperation = roomTypeVar.map(i=>if(i==1){
-    <img src="/breakout/static/img/cooperationC.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
+    <img src="/breakout/static/img/cooperationC.png" style="width:60px;height:60px;" onclick={()=>chooseRoomType(1)}></img>
   }else {
-    <img src="/breakout/static/img/cooperation.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
+    <img src="/breakout/static/img/cooperation.png" style="width:60px;height:60px;" onclick={()=>chooseRoomType(1)}></img>
   }
   )
   val compete = roomTypeVar.map(i=> if(i==2){
-    <img src="/breakout/static/img/competeC.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(2)}></img>
+    <img src="/breakout/static/img/competeC.png" style="width:60px;height:60px;" onclick={()=>chooseRoomType(2)}></img>
   }else{
-    <img src="/breakout/static/img/compete.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(2)}></img>
+    <img src="/breakout/static/img/compete.png" style="width:60px;height:60px;" onclick={()=>chooseRoomType(2)}></img>
   })
 
   def init():Unit={

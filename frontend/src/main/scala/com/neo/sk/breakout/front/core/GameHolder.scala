@@ -142,8 +142,8 @@ class GameHolder {
   def addActionListenEvent = {
     infoViewCanvas.focus()
     infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
-      //球在木板上时选择方向发射
-      if(grid.playerMap.get(grid.myId).isDefined && ballDirection){
+      //球在木板上时选择方向发射,且此时房间里有两个人
+      if(grid.playerMap.get(grid.myId).isDefined && ballDirection && grid.playerMap.toList.length == 2){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
         val pageY = e.pageY - (window.y/2 - bounds.y/2)
         mc = MC(None, pageX.toShort, pageY.toShort, grid.frameCount, getActionSerialNum)
@@ -190,16 +190,6 @@ class GameHolder {
         println(s"${player.id}  加入游戏 ${grid.frameCount} MYID:${grid.myId} ")
 
 
-      case Protocol.PlayerDead(id) =>
-        if(grid.playerMap.get(id).isDefined){
-          if(id == grid.myId){
-            //TODO 自己死亡
-            gameState = GameState.dead
-          } else {
-            grid.removePlayer(id)
-          }
-        }
-
       case Protocol.PlayerLeft(id) =>
         if(grid.playerMap.get(id).isDefined){
           grid.removePlayer(id)
@@ -219,6 +209,10 @@ class GameHolder {
         ballDirection = true
 
       /******/
+      case Protocol.GameOver() =>
+        gameState = GameState.dead
+
+
       case Protocol.PlayerCrash(player) =>
         grid.playerMap += (player.id -> player)
 

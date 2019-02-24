@@ -129,64 +129,69 @@ class GameServer(override val boundary: Point,override val window: Point) extend
 
   /**产生轮次： 1.每一轮的砖块和增加小球符号 2.该轮有几个球可以打**/
   def generateGT() = {
-    brickMap = brickMap.map(i => i.copy(_1 = i._1.copy(y = i._1.y-riseHeight))).filter(_._1.y>= brickH/2)
-    addBallList = addBallList.map(i => i.copy(y = i.y - riseHeight)).filter(_.y >= addBallRadius)
-    //每行1-4个
-    //1-5 只产生1-10之间的  5-10 只产生 1-30之间的 10+ 都产生
-    gameTurns match {
-      case x if(x>=1 && x <= 4) =>
-        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
-        for(i <-0 until brickNums){
-          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
-          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-          //满足条件时进入循环
-          while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
-            pointx = random.nextInt(boundary.x - brickW) + brickW/2
-            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+    if(brickMap.map(i => i.copy(_1 = i._1.copy(y = i._1.y-riseHeight))).filter(_._1.y<= brickH/2).isEmpty){
+      brickMap = brickMap.map(i => i.copy(_1 = i._1.copy(y = i._1.y-riseHeight))).filter(_._1.y>= brickH/2)
+
+      addBallList = addBallList.map(i => i.copy(y = i.y - riseHeight)).filter(_.y >= addBallRadius)
+      //每行1-4个
+      //1-5 只产生1-10之间的  5-10 只产生 1-30之间的 10+ 都产生
+      gameTurns match {
+        case x if(x>=1 && x <= 4) =>
+          val brickNums = random.nextInt(3).toShort + 1// 012 + 1
+          for(i <-0 until brickNums){
+            var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            //满足条件时进入循环
+            while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
+              pointx = random.nextInt(boundary.x - brickW) + brickW/2
+              pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            }
+            val num  = (random.nextInt(10) + 1).toShort
+            brickMap += Point(pointx,pointy) -> num
           }
-          val num  = (random.nextInt(10) + 1).toShort
-          brickMap += Point(pointx,pointy) -> num
-        }
-      case x if(x>=5 && x <= 8) =>
-        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
-        for(i <-0 until brickNums){
-          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
-          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-          while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
-            pointx = random.nextInt(boundary.x - brickW) + brickW/2
-            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+        case x if(x>=5 && x <= 8) =>
+          val brickNums = random.nextInt(3).toShort + 1// 012 + 1
+          for(i <-0 until brickNums){
+            var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
+              pointx = random.nextInt(boundary.x - brickW) + brickW/2
+              pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            }
+            val num  = (random.nextInt(30) + 1).toShort
+            brickMap += Point(pointx,pointy) -> num
           }
-          val num  = (random.nextInt(30) + 1).toShort
-          brickMap += Point(pointx,pointy) -> num
-        }
-      case x if(x>=9) =>
-        val brickNums = random.nextInt(3).toShort + 1// 012 + 1
-        for(i <-0 until brickNums){
-          var pointx = random.nextInt(boundary.x - brickW) + brickW/2
-          var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-          while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
-            pointx = random.nextInt(boundary.x - brickW) + brickW/2
-            pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+        case x if(x>=9) =>
+          val brickNums = random.nextInt(3).toShort + 1// 012 + 1
+          for(i <-0 until brickNums){
+            var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+            var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            while(checkCross(brickMap,pointx,pointy,brickW,brickH)){
+              pointx = random.nextInt(boundary.x - brickW) + brickW/2
+              pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+            }
+            val num  = (random.nextInt(50) + 1).toShort
+            brickMap += Point(pointx,pointy) -> num
           }
-          val num  = (random.nextInt(50) + 1).toShort
-          brickMap += Point(pointx,pointy) -> num
-        }
-    }
-    val nums = random.nextInt(100).toShort
-    if(nums > 80){
-      var pointx = random.nextInt(boundary.x - brickW) + brickW/2
-      var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
-      while(checkCross(brickMap,pointx,pointy,brickW/2+addBallRadius,brickH/2+addBallRadius)){
-        pointx = random.nextInt(boundary.x - brickW) + brickW/2
-        pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
       }
-      addBallList =  addBallList :+ Point(pointx,pointy)
+      val nums = random.nextInt(100).toShort
+      if(nums > 80){
+        var pointx = random.nextInt(boundary.x - brickW) + brickW/2
+        var pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+        while(checkCross(brickMap,pointx,pointy,brickW/2+addBallRadius,brickH/2+addBallRadius)){
+          pointx = random.nextInt(boundary.x - brickW) + brickW/2
+          pointy = random.nextInt(riseHeight - brickH) + brickH/2 + boundary.y - riseHeight
+        }
+        addBallList =  addBallList :+ Point(pointx,pointy)
+      }
+      if(!subscriber.isEmpty){
+        dispatch(subscriber)(Protocol.Bricks(brickMap))
+        dispatch(subscriber)(Protocol.AddBall(addBallList))
+      }
+      gameTurns += 1
+    }else{
+      dispatch(subscriber)(Protocol.GameOver())
     }
-    if(!subscriber.isEmpty){
-      dispatch(subscriber)(Protocol.Bricks(brickMap))
-      dispatch(subscriber)(Protocol.AddBall(addBallList))
-    }
-    gameTurns += 1
   }
 
   def generatePlayerBall = {
