@@ -121,7 +121,7 @@ object Protocol {
 
   case class CreateRoom(roomName:String,types:Int) extends UserAction
 
-  case class JoinRoom(roomId:Option[Long]) extends UserAction
+  case class JoinRoom(roomId:Long) extends UserAction
 
 
 }

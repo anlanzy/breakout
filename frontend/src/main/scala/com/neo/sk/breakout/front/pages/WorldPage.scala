@@ -7,7 +7,6 @@ import com.neo.sk.breakout.front.common.Page
 import com.neo.sk.breakout.front.common.Routes.ApiRoute
 import com.neo.sk.breakout.front.utils.Shortcut
 import com.neo.sk.breakout.front.core.{GameHolder, WebSocketClient}
-import com.neo.sk.breakout.shared.ptcl.Protocol.{GameMessage, Room}
 import org.scalajs.dom.raw.{ErrorEvent, Event}
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import org.scalajs.dom
@@ -23,6 +22,8 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
 
   var roomLists:Rx[Node] = Rx(emptyHTML)
   var roomType = 0 //1:合作  2：竞争
+  var chooseRoomId = 0l
+  var roomPlayerNum = 1
 
   def init()={
     //建立websocket连接
@@ -31,7 +32,10 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
     roomLists = GameHolder.roomInuse.map(i=>
       <div class="roomContain">
         {i.map(room=>
-        <div>
+        <div onclick={()=>{chooseRoomId = room._1,roomPlayerNum= room._2._3.length}}>
+          <div>{room._2._1}</div>
+          <div>{room._2._2}</div>
+          <div>{room._2._3.length}/2</div>
         </div>
       )}
       </div>
@@ -40,7 +44,11 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
 
 
   def joinWorld = {
-    //判断该房间是否能开始
+    //判断该房间是否满员
+    if(roomPlayerNum<2){
+      GameHolder.webSocketClient.sendMsg(Protocol.JoinRoom(chooseRoomId))
+      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType"
+    }
   }
 
   def createWold = {

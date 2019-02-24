@@ -190,9 +190,9 @@ object UserActor {
           frontActor ! Protocol.Wrap(Protocol.JoinRoomSuccess(userInfo.userId,roomId).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
           switchBehavior(ctx,"play",play(userInfo,frontActor,roomActor))
 
-//        case RoomManager.RoomInUse(roomInuse) =>
-//          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
-//          Behaviors.same
+        case RoomManager.RoomInUse(roomInuse) =>
+          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
+          Behaviors.same
 
         case UserLeft(actor) =>
           ctx.unwatch(actor)
@@ -223,9 +223,9 @@ object UserActor {
                   ): Behavior[Command] =
     Behaviors.receive[Command]{ (ctx, msg) =>
       msg match {
-//        case RoomManager.RoomInUse(roomInuse) =>
-//          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
-//          Behaviors.same
+        case RoomManager.RoomInUse(roomInuse) =>
+          frontActor ! Protocol.Wrap(Protocol.RoomInUse(roomInuse).asInstanceOf[Protocol.GameMessage].fillMiddleBuffer(sendBuffer).result())
+          Behaviors.same
 
         case Key(keyCode,frame,n) =>
           roomActor ! RoomActor.KeyR(userInfo.userId, keyCode,frame,n)
