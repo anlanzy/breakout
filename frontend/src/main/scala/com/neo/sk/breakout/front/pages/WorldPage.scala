@@ -32,7 +32,7 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
     roomLists = GameHolder.roomInuse.map(i=>
       <div class="roomContain">
         {i.map(room=>
-        <div onclick={()=>{chooseRoomId = room._1,roomPlayerNum= room._2._3.length}}>
+        <div onclick={()=>chooseRoom(room._1,room._2._3.length)}>
           <div>{room._2._1}</div>
           <div>{room._2._2}</div>
           <div>{room._2._3.length}/2</div>
@@ -40,6 +40,11 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page{
       )}
       </div>
     )
+  }
+  def chooseRoom(roomId:Long,playerNum:Int) = {
+    chooseRoomId = roomId
+    roomPlayerNum= playerNum
+    //TODO 样式改变
   }
 
 
