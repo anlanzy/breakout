@@ -26,18 +26,35 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page 
 
   var roomInuse =  Var(List.empty[(Long,(String,Int,List[String]))])
 
-  var roomId = None
+  var chooseRoomId = -1l
+  var roomPlayerNum = 1
   var roomType = 0 //1:合作  2：竞争
   var roomTypeVar = Var(0)
   var roomName = None
 
-  var chooseRoomId = 0l
-  var roomPlayerNum = 1
   var roomLists:Rx[Node] = roomInuse.map(roomList=>
-    <div>
-      {roomList.map(room => <div></div>)}
+    <div class="roomContain">
+      {roomList.map(room =>
+      <div class="roomStyle" onclick={()=> clickRoom(room)}>
+        <div class="roomName">{room._2._1}</div>
+        {roomTypePic(room._2._2)}
+        <div style="color:#858585;line-height: 30px;">{room._2._3.length}/2</div>
+      </div>
+    )}
     </div>
   )
+
+  def clickRoom(room:(Long,(String,Int,List[String]))) ={
+    chooseRoomId = room._1
+    roomPlayerNum = room._2._3.length
+  }
+  def roomTypePic(types:Int) = {
+    if(types==1){
+      <img src="/breakout/static/img/cooperation.png"></img>
+    }else{
+      <img src="/breakout/static/img/compete.png"></img>
+    }
+  }
   val cooperation = roomTypeVar.map(i=>if(i==1){
     <img src="/breakout/static/img/cooperationC.png" style="width:80px;height:80px;" onclick={()=>chooseRoomType(1)}></img>
   }else {
@@ -58,17 +75,12 @@ class WorldPage(identity:String,playerName:String,playerType:Byte) extends Page 
       }
     }
   }
-  def chooseRoom(roomId:Long,playerNum:Int) = {
-    chooseRoomId = roomId
-    roomPlayerNum= playerNum
-    //TODO 样式改变
-  }
 
 
   def joinWorld = {
     //判断该房间是否满员
-    if(roomPlayerNum<2){
-      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType/$roomId/0/0"
+    if(roomPlayerNum == 1 && chooseRoomId != -1l){
+      dom.window.location.hash = s"#/playGame/${identity}/${playerName}/$playerType/$chooseRoomId/0/0"
     }
   }
 

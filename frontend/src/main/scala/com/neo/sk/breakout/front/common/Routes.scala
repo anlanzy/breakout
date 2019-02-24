@@ -25,7 +25,7 @@ object Routes {
       if(roomId==None){
         baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType&roomName=${roomName.get}&roomType=${roomType.get}"
       }else{
-        baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType&roomId=$roomId&roomName=${roomName.get}&roomType=${roomType.get}"
+        baseUrl + s"/playGame?playerId=$playerId&playerName=$playerName&playerType=$playerType&roomId=${roomId.get}&roomName=${roomName.get}&roomType=${roomType.get}"
 
       }
 

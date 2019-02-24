@@ -84,11 +84,11 @@ class LoginPage extends Page{
   }
 
   private def enter():Unit = {
-    val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
-    val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
     types match {
       case 1 =>
         //登录
+        val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
+        val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
         val data = LoginReq(identity,password).asJson.noSpaces
         Http.postJsonAndParse[LoginRsp](AccountRoute.loginRoute,data).map{rsp =>
           if(rsp.errCode==0){
@@ -98,6 +98,8 @@ class LoginPage extends Page{
         }
       case 2 =>
         //注册
+        val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
+        val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
         val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
         val data = RegisterReq(identity,nickname,password).asJson.noSpaces
         Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute, data).map{rsp =>
@@ -108,6 +110,7 @@ class LoginPage extends Page{
         }
       case 3 =>
         //游客
+        println("lalallalal")
         val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
         val data = TouristReq(nickname).asJson.noSpaces
         Http.postJsonAndParse[LoginRsp](AccountRoute.touristRoute,data).map{rsp =>
@@ -116,6 +119,8 @@ class LoginPage extends Page{
           }
         }
       case 4 =>
+        val identity = dom.window.document.getElementById("identity").asInstanceOf[html.Input].value
+        val password = dom.window.document.getElementById("password").asInstanceOf[html.Input].value
         val nickname = dom.window.document.getElementById("nickname").asInstanceOf[html.Input].value
         val data = RegisterReq(identity,nickname,password).asJson.noSpaces
         Http.postJsonAndParse[RegisterRsp](AccountRoute.registerRoute,data).map{rsp =>
