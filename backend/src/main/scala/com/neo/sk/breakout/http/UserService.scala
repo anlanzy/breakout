@@ -60,15 +60,9 @@ trait UserService extends ServiceUtils with SessionBase {
     }
   }
 
-  private def world = (path("world") & get){
-    val flowFuture:Future[Flow[Message,Message,Any]] = roomManager ? (RoomManager.GetWorldWebSocketFlow(_))
-    dealFutureResult(
-       flowFuture.map(r=> handleWebSocketMessages(r))
-    )
-  }
 
   val userRoutes: Route =
     pathPrefix("user") {
-      playGame ~ world
+      playGame
     }
 }

@@ -1,7 +1,7 @@
 package com.neo.sk.breakout.shared.ptcl
 
 import Game._
-
+import scala.collection.mutable
 /**
   * create by zhaoyin
   * 2019/1/31  5:30 PM
@@ -76,9 +76,7 @@ object Protocol {
 
   case class PlayerMap(playerMap: Map[String,Player]) extends GameMessage
 
-  case class Room(roomId:String,roomName:String,roomType:Int,user:List[String])
-
-  case class RoomInUse(roomList:List[Room]) extends GameMessage
+  case class RoomInUse(roomList: mutable.HashMap[Long, (String, Int, List[String])]) extends GameMessage
 
   /**
     * 前端发送的数据--------------------------------------
@@ -121,7 +119,7 @@ object Protocol {
 
   case class Ping(timestamp: Long) extends UserAction
 
-  case object CreateRoom extends UserAction
+  case class CreateRoom(roomName:String,types:Int) extends UserAction
 
   case class JoinRoom(roomId:Option[Long]) extends UserAction
 

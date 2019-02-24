@@ -1,7 +1,6 @@
 package com.neo.sk.breakout.front.pages
 
 import scala.xml.Elem
-
 import com.neo.sk.breakout.front.common.Page
 import com.neo.sk.breakout.front.core.GameHolder
 import com.neo.sk.breakout.front.utils.Shortcut
@@ -16,10 +15,9 @@ class GamePage(playerId:String, playerName:String,playerType:Byte) extends Page 
   private val offScreen = <canvas id="OffScreen"></canvas>
 
   def init()={
-    val gameHolder = new GameHolder
-    gameHolder.init()
+    GameHolder.init()
     //直接建立websocket连接
-    gameHolder.joinGame(playerId,playerName,playerType)
+    GameHolder.start()
   }
 
   override def render: Elem = {

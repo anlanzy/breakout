@@ -18,9 +18,9 @@ import mhtml._
   * create by zhaoyin
   * 2019/1/31  5:13 PM
   */
-class GameHolder {
+object GameHolder {
 
-  var roomInuse =  Var(List.empty[Room])
+  var roomInuse =  Var(List.empty[(Long,(String,Int,List[String]))])
 
   val bounds = Point(Boundary.w, Boundary.h)
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
@@ -76,9 +76,6 @@ class GameHolder {
     val url = ApiRoute.getpgWebSocketUri(dom.document,playerId,playerName,playerType)
     //开启websocket
     webSocketClient.setUp(url)
-    //gameloop + gamerender
-// TODO   start()
-//  TODO  addActionListenEvent
   }
 
   def start(): Unit = {
@@ -89,6 +86,7 @@ class GameHolder {
       */
     nextInt=dom.window.setInterval(() => gameLoop, frameRate)
     dom.window.requestAnimationFrame(gameRender())
+    addActionListenEvent
   }
 
   //不同步就更新，同步就设置为不同步
@@ -208,7 +206,7 @@ class GameHolder {
         }
 
       case Protocol.RoomInUse(roomList) =>
-        roomInuse := roomList
+        roomInuse := roomList.toList
 
       /**此时新的一轮开始**/
       case Protocol.Bricks(brickMap) =>
