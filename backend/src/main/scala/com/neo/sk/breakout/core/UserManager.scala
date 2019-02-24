@@ -53,6 +53,15 @@ object UserManager {
           replyTo ! getWebSocketFlow(playerInfo,userActor)
           userActor ! UserActor.StartGame(roomInfo)
           Behaviors.same
+
+
+        case ChildDead(child, childRef) =>
+          ctx.unwatch(childRef)
+          Behaviors.same
+
+        case unknow =>
+          log.error(s"${ctx.self.path} recv a unknow msg when idle:${unknow}")
+          Behaviors.same
       }
     }
   }
