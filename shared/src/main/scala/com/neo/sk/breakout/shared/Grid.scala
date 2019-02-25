@@ -125,7 +125,7 @@ trait Grid {
   def checkBallBrickCrash() = {
     val newPlayerMap = playerMap.values.map{
       player =>
-        var score = player.score
+        var newscore = player.score
         val newPlayerBall = player.ball.map(ball =>{
           var newspeedX = ball.speedX
           var newspeedY = ball.speedY
@@ -154,7 +154,7 @@ trait Grid {
                 }else {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
-                score+=1
+                newscore+=1
                 newspeedY = - newspeedY
                 newX = (i._2._1.x + initBallRadius/sin(deg) * cos(deg)).toInt
                 newY = i._2._1.y - initBallRadius
@@ -165,7 +165,7 @@ trait Grid {
                 }else {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
-                score+=1
+                newscore+=1
                 newspeedX = - newspeedX
                 newX = i._2._1.x + initBallRadius
                 newY = (i._2._1.y + initBallRadius/cos(deg) * sin(deg)).toInt
@@ -176,7 +176,7 @@ trait Grid {
                 }else {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
-                score+=1
+                newscore+=1
                 newspeedY = - newspeedY
                 newX = (i._2._1.x + initBallRadius/sin(deg) * cos(deg)).toInt
                 newY = i._2._1.y + initBallRadius
@@ -187,7 +187,7 @@ trait Grid {
                 }else {
                   brickMap += i._1 -> (brickMap(i._1) - 1).toShort
                 }
-                score+=1
+                newscore+=1
                 newspeedX = - newspeedX
                 newX = i._2._1.x - initBallRadius
                 newY = (i._2._1.y + initBallRadius/cos(deg) * sin(deg)).toInt
@@ -196,7 +196,7 @@ trait Grid {
           }
           ball.copy(x = newX, y=newY, speedX = newspeedX, speedY = newspeedY)
         })
-        player.copy(ball = newPlayerBall)
+        player.copy(ball = newPlayerBall,score=newscore)
     }
     playerMap = newPlayerMap.map(s=>(s.id, s)).toMap
   }

@@ -130,7 +130,6 @@ class GameHolder {
       case GameState.play if grid.myId!= ""=>
         draw(offsetTime)
       case GameState.dead =>
-        drawInfoView.drawWhenDead()
         //可以看到别的玩家的操作
         draw(offsetTime)
       case _ =>
@@ -256,8 +255,9 @@ class GameHolder {
         ballDirection = true
 
       /******/
-      case Protocol.GameOver() =>
+      case Protocol.GameOver(winner) =>
         gameState = GameState.dead
+        drawInfoView.drawWhenDead(grid.myId, winner)
         grid.clearAllData
 
 

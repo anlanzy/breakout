@@ -127,7 +127,14 @@ class GameServer(override val boundary: Point,override val window: Point) extend
           if(sqrt(pow(ball.x - addBall.x, 2) + pow(ball.y - addBall.y, 2)) <= initBallRadius + addBallRadius){
             //小球撞到了增加小球符号
             addBallList = addBallList.filterNot(i=> i.x == addBall.x && i.y == addBall.y)
-            playerBallNums += player._1 -> (playerBallNums(player._1) + 1)
+            if(roomType==1){
+              //合作
+              playerBallNums = playerBallNums.map(i=>i.copy(_2 = i._2+1))
+            }
+            if(roomType==2){
+              //竞争
+              playerBallNums += player._1 -> (playerBallNums(player._1) + 1)
+            }
             dispatch(subscriber)(Protocol.AddBall(addBallList))
           }
         })
@@ -199,7 +206,13 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       }
       gameTurns += 1
     }else{
-      dispatch(subscriber)(Protocol.GameOver())
+      if(roomType==2){
+        val winner = playerMap.toList.sortBy(_._2.score).reverse.head._1
+        dispatch(subscriber)(Protocol.GameOver(winner))
+      }
+      if(roomType==1){
+        dispatch(subscriber)(Protocol.GameOver(""))
+      }
       clearAllData
     }
   }

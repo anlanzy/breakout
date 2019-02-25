@@ -144,15 +144,29 @@ case class DrawGame(
 
   }
 
-  def drawWhenDead() = {
+  def drawWhenDead(myId:String,winner:String) = {
 //    cleanCtx()
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)"
     ctx.fillRect(0,0,bounds.x,bounds.y)
-    ctx.font = "20px Helvetica"
+    ctx.font = "25px Helvetica"
     ctx.fillStyle = "#ffffff"
-    val text = "Game Over! Press Space to start new game"
-    val textLength = ctx.measureText(text).width
-    ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 10)
+
+    if(winner==""){
+      val text = "Game Over!  Press Space to start"
+      val textLength = ctx.measureText(text).width
+      ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 12)
+    }else{
+      if(myId==winner){
+        val text = "YOU LOSE  Press Space to start"
+        val textLength = ctx.measureText(text).width
+        ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 12)
+      }else{
+        val text = "YOU WIN!  Press Space to start"
+        val textLength = ctx.measureText(text).width
+        ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 12)
+      }
+    }
+
   }
 
   def drawGrid(data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {
@@ -160,7 +174,7 @@ case class DrawGame(
     val players = data.playerDetails
     val bricks = data.brickDetails
     val addBall = data.addBallDetails
-    players.foreach{ case Player(id, name, x, color, ballList)=>
+    players.foreach{ case Player(id, name, x, color, ballList,score)=>
       //小球
       ctx.fillStyle = color match {
         case 1 => "#fa8b28"
@@ -180,7 +194,7 @@ case class DrawGame(
         ctx.fillText(namefix, x - initBallRadius - nameWidth - 30, 20)
         ctx.fillStyle = "#fff"
         //TODO
-        ctx.fillText("score:" + color,x - initBallRadius - nameWidth - 30, 40)
+        ctx.fillText("score: " + score,x - initBallRadius - nameWidth - 30, 40)
       }else {
         //对方
         ctx.font = "20px Helvetica"
@@ -188,7 +202,7 @@ case class DrawGame(
         ctx.fillText(namefix, x + initBallRadius + 30, 20)
         ctx.fillStyle = "#fff"
         //TODO
-        ctx.fillText("score:" + color,x + initBallRadius + 30, 40)
+        ctx.fillText("score: " + score,x + initBallRadius + 30, 40)
       }
       //小球
       ballList.foreach(ball =>{
