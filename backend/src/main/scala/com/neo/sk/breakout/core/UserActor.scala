@@ -64,6 +64,8 @@ object UserActor {
 
   case class Left(playerInfo: BaseUserInfo) extends Command with RoomActor.Command
 
+  case class UserReJoinMsg(frame: Int) extends Command with RoomActor.Command
+
   private case object UnKnowAction extends Command
 
   private[this] def switchBehavior(ctx: ActorContext[Command],
@@ -102,6 +104,9 @@ object UserActor {
 
           case Protocol.CreateRoom(roomName,types) =>
             CreateRoom(roomName,types)
+
+          case ReJoinMsg(frame) =>
+            UserReJoinMsg(frame)
 
 //          case Protocol.JoinRoom(roomIdOp) =>
 //            log.info("JoinRoom!!!!!!")
@@ -239,6 +244,10 @@ object UserActor {
           ctx.unwatch(actor)
           roomManager ! RoomManager.LeftRoom(userInfo)
           Behaviors.stopped
+
+        case UserReJoinMsg(frame) =>
+          roomActor ! UserReJoin(userInfo.userId,frame)
+          Behaviors.same
 
         case unKnowMsg =>
           stashBuffer.stash(unKnowMsg)

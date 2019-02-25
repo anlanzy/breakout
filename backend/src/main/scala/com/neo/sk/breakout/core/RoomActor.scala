@@ -36,9 +36,15 @@ object RoomActor {
 
   case class JoinRoom(playerInfo: BaseUserInfo, userActor:ActorRef[UserActor.Command]) extends Command
 
+  case class UserReJoin(id:String,frame:Int) extends Command
+
   case class KeyR(id:String, keyCode: Int,frame:Int,n:Int) extends Command
 
   case class MouseRClick(id:String, clientX:Short,clientY:Short,frame:Int,n:Int) extends Command
+
+  private case class ReStart(id: String) extends Command
+
+  private var isJoin = false
 
   def create(roomId:Long):Behavior[Command] = {
     log.info(s"RoomActor-$roomId start...")
@@ -112,6 +118,18 @@ object RoomActor {
             dispatch(subscribersMap)(gridData)
           }
           idle(roomId, grid, playerMap, subscribersMap, tickCount + 1)
+
+        case UserReJoin(id,frame) =>
+          log.info(s"RoomActor Receive Rejoin from $id *******************")
+          ctx.self ! ReStart(id)
+          Behaviors.same
+
+        case ReStart(id) =>
+          log.info(s"RoomActor Restart Receive $id Relive Msg!++++++++++++++")
+          //          timer.cancel(ReliveTimeOutKey)
+          grid.addPlayer(id, playerMap.getOrElse(id, "Unknown"))
+          //复活时发送全量消息
+          Behaviors.same
 
         case x =>
           log.warn(s"got unknown msg: $x")

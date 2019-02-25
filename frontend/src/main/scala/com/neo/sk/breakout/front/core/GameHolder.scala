@@ -155,28 +155,31 @@ class GameHolder {
 
     infoViewCanvas.onkeydown = { e: dom.KeyboardEvent => {
         if(grid.playerMap.get(grid.myId).isDefined){
-                    if(e.keyCode==KeyCode.A){
-                      println("aaaaaa")
-                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
-                      webSocketClient.sendMsg(keyCode)
-                    }
-                    if(e.keyCode==KeyCode.S){
-                      println("sssss")
-                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
-                      webSocketClient.sendMsg(keyCode)
-                    }
-                    if(e.keyCode==KeyCode.D){
-                      println("ddddd")
-                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
-                      webSocketClient.sendMsg(keyCode)
+          if(gameState== GameState.dead && e.keyCode == KeyCode.Space){
+            val rejoinMsg = ReJoinMsg(grid.frameCount)
+            webSocketClient.sendMsg(rejoinMsg)
+          }
+          if(e.keyCode==KeyCode.A){
+            println("aaaaaa")
+            val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+            webSocketClient.sendMsg(keyCode)
+          }
+          if(e.keyCode==KeyCode.S){
+            println("sssss")
+            val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+            webSocketClient.sendMsg(keyCode)
+          }
+          if(e.keyCode==KeyCode.D){
+            println("ddddd")
+            val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+            webSocketClient.sendMsg(keyCode)
 
-                    }
-                    if(e.keyCode==KeyCode.F){
-                      println("fffff")
-                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
-                      webSocketClient.sendMsg(keyCode)
-
-                    }
+          }
+          if(e.keyCode==KeyCode.F){
+            println("fffff")
+            val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+            webSocketClient.sendMsg(keyCode)
+          }
         }
       }
     }

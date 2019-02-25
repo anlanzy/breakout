@@ -110,7 +110,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   override def update(): Unit = {
     super.update()
     genWaitingStar()  //新增
-    checkAllBall() //检查是否开始下一轮
+    if(!playerMap.isEmpty){
+      checkAllBall() //检查是否开始下一轮
+    }
 //    updateRanks()  //排名
   }
 

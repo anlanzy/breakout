@@ -147,27 +147,27 @@ object utils {
 
   //两条线段的交点
   def getIntersectPoint(beforeBall:Point, ball:Point, brick:Point) = {
-    var a = 0
-    var b = 0
+    var a = 0f
+    var b = 0f
     var pointMap = Map.empty[Point,Int]
-    if(ball.y == beforeBall.y || ball.y - beforeBall.y ==0){
+    if(ball.y == beforeBall.y || ball.y - beforeBall.y == 0){
       b = - ball.x
-      pointMap += Point(brick.x + brickW/2, b) -> 2 //右
-      pointMap += Point(brick.x - brickW/2, b) -> 4 //左
+      pointMap += Point(brick.x + brickW/2, b.toInt) -> 2 //右
+      pointMap += Point(brick.x - brickW/2, b.toInt) -> 4 //左
     }else {
-      if(ball.x == beforeBall.x || ball.x - beforeBall.x ==0) {
-        a = 1
-        pointMap += Point((brick.y - brickH/2 - b)/ a, brick.y - brickH/2) -> 1 //上
-        pointMap += Point((brick.y + brickH/2 - b)/ a, brick.y + brickH/2) -> 3  //下
+      if(ball.x == beforeBall.x || ball.x - beforeBall.x == 0) {
+        a = 1f
+        pointMap += Point(((brick.y - brickH/2 - b)/ a).toInt, brick.y - brickH/2) -> 1 //上
+        pointMap += Point(((brick.y + brickH/2 - b)/ a).toInt, brick.y + brickH/2) -> 3  //下
       }
       else {
         a = (ball.y - beforeBall.y) / (ball.x - beforeBall.x)
         b = beforeBall.y - a * beforeBall.x
 //        println(beforeBall,ball)
-        pointMap += Point((brick.y - brickH/2 - b)/ a, brick.y - brickH/2) -> 1 //上
-        pointMap += Point(brick.x + brickW/2, (brick.x + brickW/2) * a + b) -> 2 //右
-        pointMap += Point((brick.y + brickH/2 - b)/ a, brick.y + brickH/2) -> 3  //下
-        pointMap += Point(brick.x - brickW/2, (brick.x - brickW/2) * a + b) -> 4 //左
+        pointMap += Point(((brick.y - brickH/2 - b)/ a).toInt, brick.y - brickH/2) -> 1 //上
+        pointMap += Point(brick.x + brickW/2, ((brick.x + brickW/2) * a + b).toInt) -> 2 //右
+        pointMap += Point(((brick.y + brickH/2 - b)/ a).toInt, brick.y + brickH/2) -> 3  //下
+        pointMap += Point(brick.x - brickW/2, ((brick.x - brickW/2) * a + b).toInt) -> 4 //左
       }
     }
     val x = pointMap.filter(i => {

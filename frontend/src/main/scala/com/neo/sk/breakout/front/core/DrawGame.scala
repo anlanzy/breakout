@@ -67,6 +67,14 @@ case class DrawGame(
     ctx.fillStyle = "#000"
     val text = "按ASDF键发送表情 ：）"
     ctx.fillText(text, 20, 40)
+    ctx.fillText("A:",20,80)
+    ctx.drawImage(smile,50,60,25,25)
+    ctx.fillText("S:",20,110)
+    ctx.drawImage(cry,50,90,25,25)
+    ctx.fillText("D:",20,140)
+    ctx.drawImage(afraid,50,120,25,25)
+    ctx.fillText("F:",20,170)
+    ctx.drawImage(tanqi,50,150,25,25)
     //绘制文字泡
     ctx.drawImage(talkL, 0, bounds.y/2-50, 300, 300)
     ctx.drawImage(talkR, bounds.x- 320, bounds.y/2-50, 300, 300)
