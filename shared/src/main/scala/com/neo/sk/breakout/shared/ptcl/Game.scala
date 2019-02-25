@@ -29,7 +29,8 @@ object Game {
                      name:String,
                      x:Int,
                      color: Byte,
-                     ball: List[Ball]  //玩家就一个小球
+                     ball: List[Ball],
+                     score: Int
                    )
 
   case class Ball(

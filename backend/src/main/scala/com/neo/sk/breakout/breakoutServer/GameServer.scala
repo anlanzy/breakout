@@ -64,11 +64,11 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   //生成玩家
   private[this] def genWaitingStar() = {
     waitingJoin.filterNot(kv => playerMap.contains(kv._1)).foreach{ case (id, name) =>
-      var player = Player("","",0,0, ball = List(Ball(0,0,0,0,0,0f,0f)))
+      var player = Player("","",0,0, ball = List(Ball(0,0,0,0,0,0f,0f)),score = 0)
       if(playerMap.isEmpty){
-        player = Player(id,name, Boundary.w * 1/3, 1, ball = List(Ball(Boundary.w * 1/3, initBallRadius, Boundary.w * 1/3, initBallRadius)))
+        player = Player(id,name, Boundary.w * 1/3, 1, ball = List(Ball(Boundary.w * 1/3, initBallRadius, Boundary.w * 1/3, initBallRadius)),score = 0)
       }else {
-        player = Player(id,name, Boundary.w * 2/3, 2, ball = List(Ball(Boundary.w * 2/3, initBallRadius, Boundary.w * 2/3, initBallRadius)))
+        player = Player(id,name, Boundary.w * 2/3, 2, ball = List(Ball(Boundary.w * 2/3, initBallRadius, Boundary.w * 2/3, initBallRadius)),score = 0)
       }
       playerMap += id -> player
       playerBallNums += id -> 1

@@ -178,11 +178,17 @@ case class DrawGame(
         val namefix = if(name.length > 7) name.substring(0, 6) + "*" else name
         val nameWidth = ctx.measureText(namefix).width
         ctx.fillText(namefix, x - initBallRadius - nameWidth - 30, 20)
+        ctx.fillStyle = "#fff"
+        //TODO
+        ctx.fillText("score:" + color,x - initBallRadius - nameWidth - 30, 40)
       }else {
         //对方
         ctx.font = "20px Helvetica"
         val namefix = if(name.length > 8) name.substring(0, 7) + "*" else name
         ctx.fillText(namefix, x + initBallRadius + 30, 20)
+        ctx.fillStyle = "#fff"
+        //TODO
+        ctx.fillText("score:" + color,x + initBallRadius + 30, 40)
       }
       //小球
       ballList.foreach(ball =>{
