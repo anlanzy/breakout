@@ -10,9 +10,11 @@ import com.neo.sk.breakout.front.utils.Shortcut
   */
 class GamePage(playerId:String, playerName:String,playerType:Byte,roomId:Option[Long], roomName:Option[String],roomType:Option[Int]) extends Page {
 
-  private val gameView = <canvas id ="GameView"></canvas>
-  private val infoView = <canvas id ="InfoView"></canvas>
-  private val offScreen = <canvas id="OffScreen"></canvas>
+  private val gameView = <canvas id ="GameView" tabindex="1"></canvas>
+  private val infoView = <canvas id ="InfoView" tabindex="3"></canvas>
+  private val offScreen = <canvas id="OffScreen" tabindex="4"></canvas>
+  private val topView = <canvas id="TopView" tabindex="5"></canvas>
+
 
   def init()={
     val gameHolder = new GameHolder
@@ -33,6 +35,7 @@ class GamePage(playerId:String, playerName:String,playerType:Byte,roomId:Option[
       {gameView}
       {infoView}
       {offScreen}
+      {topView}
     </div>
   }
 }

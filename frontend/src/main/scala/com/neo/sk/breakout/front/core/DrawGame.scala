@@ -81,6 +81,7 @@ case class DrawGame(
   }
 
   def drawLook(myId:String,showLook:Boolean,lookList:List[(Int,String,Int)]) = {
+    cleanCtx()
     if(showLook){
       val showTime = lookList.head._1
       val identity = lookList.head._2
@@ -91,26 +92,26 @@ case class DrawGame(
           //左边
           look match {
             case 65 =>
-              ctx.drawImage(smile,120,bounds.y/2-50,50,50)
+              ctx.drawImage(smile,120,bounds.y/2,100,100)
             case 83 =>
-              ctx.drawImage(cry,120,bounds.y/2-50,50,50)
+              ctx.drawImage(cry,120,bounds.y/2,100,100)
             case 68 =>
-              ctx.drawImage(afraid,120,bounds.y/2-50,50,50)
+              ctx.drawImage(afraid,120,bounds.y/2,100,100)
             case 70 =>
-              ctx.drawImage(tanqi,120,bounds.y/2-50,50,50)
+              ctx.drawImage(tanqi,120,bounds.y/2,100,100)
             case x =>
           }
         }else{
           look match {
             //右边
             case 65 =>
-              ctx.drawImage(smile,bounds.x-300,bounds.y/2-50,50,50)
+              ctx.drawImage(smile,bounds.x- 250,bounds.y/2,100,100)
             case 83 =>
-              ctx.drawImage(cry,bounds.x-300,bounds.y/2-50,50,50)
+              ctx.drawImage(cry,bounds.x-250,bounds.y/2,100,100)
             case 68 =>
-              ctx.drawImage(afraid,bounds.x-300,bounds.y/2-50,50,50)
+              ctx.drawImage(afraid,bounds.x-250,bounds.y/2,100,100)
             case 70 =>
-              ctx.drawImage(tanqi,bounds.x-300,bounds.y/2-50,50,50)
+              ctx.drawImage(tanqi,bounds.x-250,bounds.y/2,100,100)
             case x =>
           }
         }
@@ -192,17 +193,19 @@ case class DrawGame(
         val namefix = if(name.length > 7) name.substring(0, 6) + "*" else name
         val nameWidth = ctx.measureText(namefix).width
         ctx.fillText(namefix, x - initBallRadius - nameWidth - 30, 20)
+        ctx.save()
         ctx.fillStyle = "#fff"
-        //TODO
         ctx.fillText("score: " + score,x - initBallRadius - nameWidth - 30, 40)
+        ctx.restore()
       }else {
         //对方
         ctx.font = "20px Helvetica"
         val namefix = if(name.length > 8) name.substring(0, 7) + "*" else name
         ctx.fillText(namefix, x + initBallRadius + 30, 20)
+        ctx.save()
         ctx.fillStyle = "#fff"
-        //TODO
         ctx.fillText("score: " + score,x + initBallRadius + 30, 40)
+        ctx.restore()
       }
       //小球
       ballList.foreach(ball =>{

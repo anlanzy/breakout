@@ -29,11 +29,15 @@ class GameHolder {
   private[this] val gameCtx = gameViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val infoViewCanvas = dom.document.getElementById("InfoView").asInstanceOf[Canvas]
   private[this] val infoViewCtx = infoViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
+  private[this] val TopViewCanvas = dom.document.getElementById("TopView").asInstanceOf[Canvas]
+  private[this] val TopViewCtx = TopViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val offScreenCanvas = dom.document.getElementById("OffScreen").asInstanceOf[Canvas]
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val drawGameView=DrawGame(gameCtx,gameViewCanvas,bounds,window)
   private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,offscreenBounds,window)
   private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,window,window)
+  private[this] val drawTopView=DrawGame(TopViewCtx,TopViewCanvas,window,window)
+
 
 
 
@@ -141,7 +145,7 @@ class GameHolder {
     if (webSocketClient.getWsState){
       val data = grid.getGridData()
       drawGameView.drawGrid(data,offsetTime,bounds,window)
-      val paraBack = drawInfoView.drawLook(grid.myId,showLook, lookList)
+      val paraBack = drawTopView.drawLook(grid.myId,showLook, lookList)
       lookList = paraBack._1
       showLook = paraBack._2
     }else{
@@ -150,32 +154,28 @@ class GameHolder {
   }
 
   def addActionListenEvent = {
-    infoViewCanvas.focus()
+    TopViewCanvas.focus()
 
-    infoViewCanvas.onkeydown = { e: dom.KeyboardEvent => {
+    TopViewCanvas.onkeydown = { e: dom.KeyboardEvent => {
         if(grid.playerMap.get(grid.myId).isDefined){
           if(gameState== GameState.dead && e.keyCode == KeyCode.Space){
             val rejoinMsg = ReJoinMsg(grid.frameCount)
             webSocketClient.sendMsg(rejoinMsg)
           }
           if(e.keyCode==KeyCode.A){
-            println("aaaaaa")
             val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
             webSocketClient.sendMsg(keyCode)
           }
           if(e.keyCode==KeyCode.S){
-            println("sssss")
             val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
             webSocketClient.sendMsg(keyCode)
           }
           if(e.keyCode==KeyCode.D){
-            println("ddddd")
             val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
             webSocketClient.sendMsg(keyCode)
 
           }
           if(e.keyCode==KeyCode.F){
-            println("fffff")
             val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
             webSocketClient.sendMsg(keyCode)
           }
@@ -183,7 +183,7 @@ class GameHolder {
       }
     }
 
-    infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
+    TopViewCanvas.onclick = { (e: dom.MouseEvent) =>
       //球在木板上时选择方向发射,且此时房间里有两个人
       if(grid.playerMap.get(grid.myId).isDefined && ballDirection && grid.playerMap.toList.length == 2){
         val pageX = e.pageX - (window.x/2 - bounds.x/2)
@@ -208,7 +208,8 @@ class GameHolder {
         //按键发表情
         if(m.id.isDefined){
           if(m.kC!=KeyCode.Space){
-            lookList :+=(200,m.id.get,m.kC)
+            println("lalallal")
+            lookList :+=(50,m.id.get,m.kC)
             showLook = true
           }
         }
