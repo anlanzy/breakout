@@ -46,7 +46,7 @@ object RoomActor {
 
   private var isJoin = false
 
-  def create(roomId:Long):Behavior[Command] = {
+  def create(roomId:Long,roomType:Int):Behavior[Command] = {
     log.info(s"RoomActor-$roomId start...")
     Behaviors.setup[Command]{ ctx =>
       Behaviors.withTimers[Command] {
@@ -56,7 +56,7 @@ object RoomActor {
           val playerMap = mutable.HashMap[String,String]()
           /**每个房间都有一个自己的gird**/
           val grid = new GameServer(bounds,window)
-          grid.setRoomId(roomId)
+          grid.setRoomId(roomId,roomType)
           /**后台的逻辑帧**/
           timer.startPeriodicTimer(SyncTimeKey, Sync, frameRate millis)
           idle(roomId, grid,playerMap, subscribersMap, 0l)

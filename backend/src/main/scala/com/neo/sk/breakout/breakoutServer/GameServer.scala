@@ -24,7 +24,10 @@ class GameServer(override val boundary: Point,override val window: Point) extend
 
   override def info(msg: String): Unit = log.info(msg)
 
+  /**房间信息**/
   private var roomId = 0l
+  //若是合作，每个小球打到的增加小球符号，都会给对方加球，如果是竞争，则不
+  private var roomType = 0 //1:合作 2：竞争
   //轮次
   private var gameTurns = 1
   //等待加入的玩家
@@ -38,8 +41,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
   /**产生初始砖块**/
   generateGT()
 
-  def setRoomId(id:Long)={
+  def setRoomId(id:Long,roomTypes:Int)={
     roomId = id
+    roomType = roomTypes
   }
 
   def addPlayer(id: String, name: String) = waitingJoin += (id -> name)

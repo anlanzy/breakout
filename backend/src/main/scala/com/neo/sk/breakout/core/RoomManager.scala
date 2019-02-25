@@ -73,7 +73,7 @@ object RoomManager {
                   case Some(ls) =>
                     if(ls._3.length<2){
                       roomInUse.put(roomId,(ls._1,ls._2,playerInfo.userId::ls._3))
-                      getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
+                      getRoomActor(ctx,roomId,0) ! RoomActor.JoinRoom(playerInfo,userActor)
                     }
                   case None =>
                 }
@@ -81,7 +81,7 @@ object RoomManager {
                 var roomId = roomIdGenerator.getAndIncrement()
                 while(roomInUse.exists(_._1 == roomId))roomId = roomIdGenerator.getAndIncrement()
                 roomInUse.put(roomId,(roomInfo.roomName.get,roomInfo.roomType.get,List(playerInfo.userId)))
-                getRoomActor(ctx,roomId) ! RoomActor.JoinRoom(playerInfo,userActor)
+                getRoomActor(ctx,roomId,roomInfo.roomType.get) ! RoomActor.JoinRoom(playerInfo,userActor)
 
             }
             Behaviors.same
@@ -90,7 +90,7 @@ object RoomManager {
             roomInUse.find(_._2._3.contains(playerInfo.userId)) match{
               case Some(t) =>
                 roomInUse.put(t._1,(t._2._1,t._2._2,t._2._3.filterNot(_ == playerInfo.userId)))
-                getRoomActor(ctx,t._1) ! UserActor.Left(playerInfo)
+                getRoomActor(ctx,t._1,0) ! UserActor.Left(playerInfo)
                 if(roomInUse(t._1)._3.isEmpty) roomInUse.remove(t._1)
               case None => log.debug(s"该玩家不在任何房间")
             }
@@ -108,10 +108,10 @@ object RoomManager {
     }
 
 
-  private def getRoomActor(ctx: ActorContext[Command],roomId:Long):ActorRef[RoomActor.Command] = {
+  private def getRoomActor(ctx: ActorContext[Command],roomId:Long,roomType:Int):ActorRef[RoomActor.Command] = {
     val childName = s"RoomActor-$roomId"
     ctx.child(childName).getOrElse{
-      ctx.spawn(RoomActor.create(roomId),childName)
+      ctx.spawn(RoomActor.create(roomId,roomType),childName)
     }.upcast[RoomActor.Command]
   }
 

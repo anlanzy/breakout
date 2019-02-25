@@ -10,7 +10,7 @@ import org.seekloud.byteobject.ByteObject._
 import org.seekloud.byteobject.MiddleBufferInJvm
 import scala.concurrent.duration._
 import scala.language.implicitConversions
-
+import com.neo.sk.breakout.core.RoomActor.UserReJoin
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import com.neo.sk.breakout.ptcl.UserProtocol._
 import com.neo.sk.breakout.Boot.roomManager
