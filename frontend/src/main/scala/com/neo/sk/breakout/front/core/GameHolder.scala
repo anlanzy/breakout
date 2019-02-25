@@ -31,7 +31,7 @@ class GameHolder {
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val drawGameView=DrawGame(gameCtx,gameViewCanvas,bounds,window)
   private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,offscreenBounds,window)
-  private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,bounds,window)
+  private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,window,window)
 
 
 
@@ -63,6 +63,7 @@ class GameHolder {
 
   def init(): Unit = {
 //    drawGameView.drawGameWelcome
+    drawInfoView.drawImg
     drawOffScreen.drawBackground
 //    drawGameView.drawGameOn()
 //    drawMiddleView.drawRankMap()

@@ -19,8 +19,10 @@ case class DrawGame(
                      window:Point
                    ) {
 
-  private[this] val addBallImg = img(*.src := s"/breakout/static/img/addBall.png").render
-  private[this] val brick = img(*.src := s"/breakout/static/img/brick.png").render
+  private[this] val addBallImg = img(*.src := "/breakout/static/img/addBall.png").render
+  private[this] val brick = img(*.src := "/breakout/static/img/brick.png").render
+  private[this] val talkL = img(*.src := "/breakout/static/img/talkL.png").render
+  private[this] val talkR = img(*.src := "/breakout/static/img/talkR.png").render
 
 
   this.canvas.width = bounds.x
@@ -56,10 +58,21 @@ case class DrawGame(
     ctx.fillText(lost, bounds.x/2 - lostWidth/2 ,bounds.y/2 - 16)
   }
 
+  def drawImg = {
+    //发送表情提示
+    ctx.font = "20px Helvetica"
+    ctx.fillStyle = "#000"
+    val text = "按ASDF键发送表情 ：）"
+    ctx.fillText(text, 20, 20)
+    //绘制文字泡
+    ctx.drawImage(talkL, 0, bounds.y/2-50, 300, 300)
+    ctx.drawImage(talkR, bounds.x- 320, bounds.y/2-50, 300, 300)
+  }
+
   def drawBackground: Unit = {
     /**背景色**/
     ctx.fillStyle = "#25313e"
-    ctx.fillRect(brickLength, brickLength, bounds.x-brickLength*2, bounds.y-brickLength*2)
+    ctx.fillRect(brickLength, brickLength, bounds.x-brickLength*2, bounds.y-brickLength)
     /**三边的砖块**/
     for(i <-0 until 11){
       //顶部
@@ -69,7 +82,7 @@ case class DrawGame(
       ctx.drawImage(brick,0,i*brickLength,brickLength,brickLength)
     }
     for(i <- 0 until 15){
-      ctx.drawImage(brick,520,i*brickLength,brickLength,brickLength)
+      ctx.drawImage(brick,500 + brickLength,i*brickLength,brickLength,brickLength)
     }
 
   }
@@ -94,7 +107,7 @@ case class DrawGame(
       //小球
       ctx.fillStyle = color match {
         case 1 => "#fa8b28"
-        case 2 => "#4a27fa"
+        case 2 => "#608ff7"
         case 3 => "#199e28"
         case 4 => "#f32c5f"
         case 5 => "#4ff6f8"
@@ -105,14 +118,14 @@ case class DrawGame(
       if(x == bounds.x * 1/3){
         //自己
         ctx.font = "20px Helvetica"
-        val namefix = if(name.length > 5) name.substring(0, 4) + "*" else name
+        val namefix = if(name.length > 7) name.substring(0, 6) + "*" else name
         val nameWidth = ctx.measureText(namefix).width
-        ctx.fillText(namefix, x - initBallRadius - nameWidth - 10, 20)
+        ctx.fillText(namefix, x - initBallRadius - nameWidth - 30, 20)
       }else {
         //对方
         ctx.font = "20px Helvetica"
         val namefix = if(name.length > 8) name.substring(0, 7) + "*" else name
-        ctx.fillText(namefix, x + initBallRadius + 10, 20)
+        ctx.fillText(namefix, x + initBallRadius + 30, 20)
       }
       //小球
       ballList.foreach(ball =>{

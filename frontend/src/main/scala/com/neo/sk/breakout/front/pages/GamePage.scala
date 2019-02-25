@@ -29,7 +29,7 @@ class GamePage(playerId:String, playerName:String,playerType:Byte,roomId:Option[
 
   override def render: Elem = {
     Shortcut.scheduleOnce(() =>init(),0)
-    <div style="width:500px; height:700px">
+    <div style="width:600px; height:750px; display:flex; justify-content:center;align-items:center">
       {gameView}
       {infoView}
       {offScreen}
