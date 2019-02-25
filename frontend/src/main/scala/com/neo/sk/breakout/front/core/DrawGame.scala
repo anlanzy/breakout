@@ -23,7 +23,10 @@ case class DrawGame(
   private[this] val brick = img(*.src := "/breakout/static/img/brick.png").render
   private[this] val talkL = img(*.src := "/breakout/static/img/talkL.png").render
   private[this] val talkR = img(*.src := "/breakout/static/img/talkR.png").render
-
+  private[this] val smile = img(*.src := "/breakout/static/img/smile.png").render
+  private[this] val cry = img(*.src := "/breakout/static/img/cry.png").render
+  private[this] val afraid = img(*.src := "/breakout/static/img/afraid.png").render
+  private[this] val tanqi = img(*.src := "/breakout/static/img/tanqi.png").render
 
   this.canvas.width = bounds.x
   this.canvas.height = bounds.y
@@ -63,10 +66,56 @@ case class DrawGame(
     ctx.font = "20px Helvetica"
     ctx.fillStyle = "#000"
     val text = "按ASDF键发送表情 ：）"
-    ctx.fillText(text, 20, 20)
+    ctx.fillText(text, 20, 40)
     //绘制文字泡
     ctx.drawImage(talkL, 0, bounds.y/2-50, 300, 300)
     ctx.drawImage(talkR, bounds.x- 320, bounds.y/2-50, 300, 300)
+  }
+
+  def drawLook(myId:String,showLook:Boolean,lookList:List[(Int,String,Int)]) = {
+    if(showLook){
+      val showTime = lookList.head._1
+      val identity = lookList.head._2
+      val look = lookList.head._3
+      if(showTime>0){
+        ctx.save()
+        if(myId==identity){
+          //左边
+          look match {
+            case 65 =>
+              ctx.drawImage(smile,120,bounds.y/2-50,50,50)
+            case 83 =>
+              ctx.drawImage(cry,120,bounds.y/2-50,50,50)
+            case 68 =>
+              ctx.drawImage(afraid,120,bounds.y/2-50,50,50)
+            case 70 =>
+              ctx.drawImage(tanqi,120,bounds.y/2-50,50,50)
+            case x =>
+          }
+        }else{
+          look match {
+            //右边
+            case 65 =>
+              ctx.drawImage(smile,bounds.x-300,bounds.y/2-50,50,50)
+            case 83 =>
+              ctx.drawImage(cry,bounds.x-300,bounds.y/2-50,50,50)
+            case 68 =>
+              ctx.drawImage(afraid,bounds.x-300,bounds.y/2-50,50,50)
+            case 70 =>
+              ctx.drawImage(tanqi,bounds.x-300,bounds.y/2-50,50,50)
+            case x =>
+          }
+        }
+        ctx.restore()
+        val lookList1= if(showTime > 1) (showTime - 1,identity,look)::lookList.tail else lookList.tail
+        if(lookList.isEmpty) (lookList1,false) else (lookList1,showLook)
+      }else{
+        (lookList,showLook)
+      }
+    }else{
+      (lookList,showLook)
+    }
+
   }
 
   def drawBackground: Unit = {

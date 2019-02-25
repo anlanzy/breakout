@@ -1,8 +1,9 @@
 package com.neo.sk.breakout.front.core
 
 import org.scalajs.dom
-import org.scalajs.dom.html.Canvas
-import org.scalajs.dom.raw.{ErrorEvent, Event}
+import org.scalajs.dom.ext.KeyCode
+import org.scalajs.dom.html.{Canvas, Document => _}
+import org.scalajs.dom.raw._
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.neo.sk.breakout.front.breakoutClient.GameClient
@@ -13,6 +14,7 @@ import com.neo.sk.breakout.shared.ptcl.GameConfig._
 import com.neo.sk.breakout.shared.ptcl.Protocol
 import com.neo.sk.breakout.shared.ptcl.Protocol._
 import mhtml._
+
 
 /**
   * create by zhaoyin
@@ -42,6 +44,7 @@ class GameHolder {
   private[this] var  gameState = GameState.waiting
 
   private[this] var ballDirection = true
+  var showLook = false //判断该帧内有无玩家发送表情
 
 
   /**可变参数**/
@@ -58,6 +61,9 @@ class GameHolder {
 
   /**前端为每一个玩家有一个对应的grid**/
   val grid = new GameClient(bounds,window)
+
+  /**用于显示玩家表情**/
+  private[this] var lookList = List.empty[(Int,String,Int)] //time,identity,lookType
 
   def getActionSerialNum=actionSerialNumGenerator.getAndIncrement()
 
@@ -136,6 +142,9 @@ class GameHolder {
     if (webSocketClient.getWsState){
       val data = grid.getGridData()
       drawGameView.drawGrid(data,offsetTime,bounds,window)
+      val paraBack = drawInfoView.drawLook(grid.myId,showLook, lookList)
+      lookList = paraBack._1
+      showLook = paraBack._2
     }else{
       drawGameView.drawGameLost
     }
@@ -143,6 +152,35 @@ class GameHolder {
 
   def addActionListenEvent = {
     infoViewCanvas.focus()
+
+    infoViewCanvas.onkeydown = { e: dom.KeyboardEvent => {
+        if(grid.playerMap.get(grid.myId).isDefined){
+                    if(e.keyCode==KeyCode.A){
+                      println("aaaaaa")
+                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+                      webSocketClient.sendMsg(keyCode)
+                    }
+                    if(e.keyCode==KeyCode.S){
+                      println("sssss")
+                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+                      webSocketClient.sendMsg(keyCode)
+                    }
+                    if(e.keyCode==KeyCode.D){
+                      println("ddddd")
+                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+                      webSocketClient.sendMsg(keyCode)
+
+                    }
+                    if(e.keyCode==KeyCode.F){
+                      println("fffff")
+                      val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
+                      webSocketClient.sendMsg(keyCode)
+
+                    }
+        }
+      }
+    }
+
     infoViewCanvas.onclick = { (e: dom.MouseEvent) =>
       //球在木板上时选择方向发射,且此时房间里有两个人
       if(grid.playerMap.get(grid.myId).isDefined && ballDirection && grid.playerMap.toList.length == 2){
@@ -154,6 +192,8 @@ class GameHolder {
         ballDirection = false
       }
     }
+
+
   }
 
   private def wsMessageHandler(data:GameMessage):Unit = {
@@ -163,10 +203,11 @@ class GameHolder {
         gameState = GameState.play
 
       case m:Protocol.KC =>
+        //按键发表情
         if(m.id.isDefined){
-          val mid = m.id.get
-          if(!grid.myId.equals(mid)){
-            grid.addActionWithFrame(mid,m)
+          if(m.kC!=KeyCode.Space){
+            lookList :+=(200,m.id.get,m.kC)
+            showLook = true
           }
         }
 
@@ -237,7 +278,6 @@ class GameHolder {
     drawGameView.drawGameLost
     e
   }
-
 
   private def wsConnectClose(e:Event) = {
     println("last Ws close")
