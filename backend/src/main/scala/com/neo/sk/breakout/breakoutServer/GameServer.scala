@@ -102,6 +102,8 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       generateGT
       //让玩家的小球又产生
       generatePlayerBall
+      //清除鼠标点击事件
+      ballMouseActionMap = Map.empty[String, MC]
     }
   }
 
@@ -118,8 +120,9 @@ class GameServer(override val boundary: Point,override val window: Point) extend
         addBallList.foreach(addBall => {
           if(sqrt(pow(ball.x - addBall.x, 2) + pow(ball.y - addBall.y, 2)) <= initBallRadius + addBallRadius){
             //小球撞到了增加小球符号
-            addBallList = addBallList.filterNot(i=> i.x == ball.x && i.y == ball.y)
+            addBallList = addBallList.filterNot(i=> i.x == addBall.x && i.y == addBall.y)
             playerBallNums += player._1 -> (playerBallNums(player._1) + 1)
+            dispatch(subscriber)(Protocol.AddBall(addBallList))
           }
         })
       })
@@ -191,6 +194,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       gameTurns += 1
     }else{
       dispatch(subscriber)(Protocol.GameOver())
+      clearAllData
     }
   }
 
@@ -203,6 +207,12 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       player.copy(_2 = player._2.copy(ball = list))
     })
     dispatch(subscriber)(Protocol.PlayerMap(playerMap))
+  }
+
+  override def clearAllData: Unit ={
+    super.clearAllData
+    gameTurns = 1
+    playerBallNums = Map.empty[String,Int]
   }
 
 }

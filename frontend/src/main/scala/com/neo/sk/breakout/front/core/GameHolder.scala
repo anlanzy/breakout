@@ -21,6 +21,7 @@ import mhtml._
 class GameHolder {
 
   val bounds = Point(Boundary.w, Boundary.h)
+  val offscreenBounds = Point(Boundary.w+brickLength*2,Boundary.h+brickLength*2)
   var window = Point(dom.window.innerWidth.toInt, dom.window.innerHeight.toInt)
   private[this] val gameViewCanvas = dom.document.getElementById("GameView").asInstanceOf[Canvas]
   private[this] val gameCtx = gameViewCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
@@ -29,7 +30,7 @@ class GameHolder {
   private[this] val offScreenCanvas = dom.document.getElementById("OffScreen").asInstanceOf[Canvas]
   private[this] val offCtx = offScreenCanvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
   private[this] val drawGameView=DrawGame(gameCtx,gameViewCanvas,bounds,window)
-  private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,bounds,window)
+  private[this] val drawOffScreen=DrawGame(offCtx,offScreenCanvas,offscreenBounds,window)
   private[this] val drawInfoView=DrawGame(infoViewCtx,infoViewCanvas,bounds,window)
 
 
@@ -206,11 +207,13 @@ class GameHolder {
 
       case Protocol.PlayerMap(playerMap) =>
         grid.playerMap = playerMap
+        grid.ballMouseActionMap = Map.empty[String, MC]
         ballDirection = true
 
       /******/
       case Protocol.GameOver() =>
         gameState = GameState.dead
+        grid.clearAllData
 
 
       case Protocol.PlayerCrash(player) =>

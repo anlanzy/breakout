@@ -20,6 +20,7 @@ case class DrawGame(
                    ) {
 
   private[this] val addBallImg = img(*.src := s"/breakout/static/img/addBall.png").render
+  private[this] val brick = img(*.src := s"/breakout/static/img/brick.png").render
 
 
   this.canvas.width = bounds.x
@@ -58,8 +59,18 @@ case class DrawGame(
   def drawBackground: Unit = {
     /**背景色**/
     ctx.fillStyle = "#25313e"
-    ctx.fillRect(0, 0, bounds.x, bounds.y)
-    /**顶部的砖块**/
+    ctx.fillRect(brickLength, brickLength, bounds.x-brickLength*2, bounds.y-brickLength*2)
+    /**三边的砖块**/
+    for(i <-0 until 11){
+      //顶部
+      ctx.drawImage(brick,i*brickLength,0,brickLength,brickLength)
+    }
+    for(i <- 0 until 15){
+      ctx.drawImage(brick,0,i*brickLength,brickLength,brickLength)
+    }
+    for(i <- 0 until 15){
+      ctx.drawImage(brick,520,i*brickLength,brickLength,brickLength)
+    }
 
   }
 
@@ -67,11 +78,11 @@ case class DrawGame(
     cleanCtx()
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)"
     ctx.fillRect(0,0,bounds.x,bounds.y)
-    ctx.font = "30px Helvetica"
+    ctx.font = "20px Helvetica"
     ctx.fillStyle = "#ffffff"
-    val text = "YOU DEAD"
+    val text = "Game Over! Press Space to start new game"
     val textLength = ctx.measureText(text).width
-    ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 15)
+    ctx.fillText(text, bounds.x /2 - textLength/2, bounds.y/2 - 10)
   }
 
   def drawGrid(data:GridDataSync, offsetTime:Long, bounds:Point, window:Point) = {

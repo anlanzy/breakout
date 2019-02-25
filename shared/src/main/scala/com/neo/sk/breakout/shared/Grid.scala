@@ -81,10 +81,10 @@ trait Grid {
       val newPlayerBall = player.ball.map(ball =>{
         val newbeforeX = ball.x
         val newbeforeY = ball.y
-        var newX = (ball.x + ball.speedX).toInt
-        var newY = (ball.y + ball.speedY).toInt
         var newspeedX = ball.speedX
         var newspeedY = ball.speedY
+        var newX = (ball.x + ball.speedX).toInt
+        var newY = (ball.y + ball.speedY).toInt
         var newonBoard = ball.onBoard
         val mouseAct = ballMouseActionMap.get(player.id)
         if(mouseAct.isDefined){
@@ -221,5 +221,31 @@ trait Grid {
 
   //检查小球和增加小球符号碰撞
   def checkBallAddBllCrash()
+
+  def clearAllData = {
+    //    food
+    //    virusMap
+    //    playerMap
+    //    actionMap
+    //    mouseActionMap
+    //    massList
+    //
+    //    ActionEventMap
+    //    GameEventMap
+    //    deadPlayerMap
+    //
+    //    tick
+    //    Scale
+
+    //    myId = ""
+    //grid中数据清除
+    playerMap = Map.empty[String,Player]
+    brickMap = Map.empty[Point, Short]
+    addBallList = List[Point]()
+    ballMouseActionMap = Map.empty[String, MC]
+    frameCount = 0
+    actionMap = Map.empty[Int, Map[String, KC]]
+
+  }
 
 }

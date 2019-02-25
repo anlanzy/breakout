@@ -197,8 +197,8 @@ object utils {
       ball.x <= initBallRadius)
     //x方向转向
       1
-    else if(ball.y <= initBallRadius)
-    //x方向转向
+    else if(ball.y < initBallRadius)
+    //y方向转向
       2
     else
       0
