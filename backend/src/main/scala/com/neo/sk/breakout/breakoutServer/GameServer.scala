@@ -37,6 +37,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
 
   //玩家有几个小球（通过撞到增加小球符号可以增加小球）
   private var playerBallNums = Map.empty[String,Int]
+  var reStart = false
 
   /**产生初始砖块**/
   generateGT()
@@ -72,6 +73,7 @@ class GameServer(override val boundary: Point,override val window: Point) extend
       }
       playerMap += id -> player
       playerBallNums += id -> 1
+      reStart = true
       dispatch(subscriber)(PlayerJoin(id,player))
       dispatchTo(subscriber)(id, getAllGridData)
     }
@@ -101,13 +103,14 @@ class GameServer(override val boundary: Point,override val window: Point) extend
           updateTurns = false
         })
     })
-    if(updateTurns){
+    if(updateTurns||reStart){
       /**一轮结束，开始下一轮**/
       generateGT
       //让玩家的小球又产生
       generatePlayerBall
       //清除鼠标点击事件
       ballMouseActionMap = Map.empty[String, MC]
+      reStart = false
     }
   }
 

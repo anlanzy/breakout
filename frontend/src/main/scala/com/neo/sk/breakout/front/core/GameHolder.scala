@@ -71,6 +71,7 @@ class GameHolder {
 
   def getActionSerialNum=actionSerialNumGenerator.getAndIncrement()
 
+  var winner = ""
   def init(): Unit = {
 //    drawGameView.drawGameWelcome
     drawInfoView.drawImg
@@ -135,7 +136,9 @@ class GameHolder {
         draw(offsetTime)
       case GameState.dead =>
         //可以看到别的玩家的操作
+        drawInfoView.drawWhenDead(grid.myId, winner)
         draw(offsetTime)
+        grid.clearAllData
       case _ =>
     }
     nextFrame = dom.window.requestAnimationFrame(gameRender())
@@ -157,11 +160,11 @@ class GameHolder {
     TopViewCanvas.focus()
 
     TopViewCanvas.onkeydown = { e: dom.KeyboardEvent => {
+      if(gameState== GameState.dead && e.keyCode == KeyCode.Space){
+        val rejoinMsg = ReJoinMsg(grid.frameCount)
+        webSocketClient.sendMsg(rejoinMsg)
+      }
         if(grid.playerMap.get(grid.myId).isDefined){
-          if(gameState== GameState.dead && e.keyCode == KeyCode.Space){
-            val rejoinMsg = ReJoinMsg(grid.frameCount)
-            webSocketClient.sendMsg(rejoinMsg)
-          }
           if(e.keyCode==KeyCode.A){
             val keyCode = Protocol.KC(None, e.keyCode, grid.frameCount, getActionSerialNum)
             webSocketClient.sendMsg(keyCode)
@@ -208,7 +211,6 @@ class GameHolder {
         //按键发表情
         if(m.id.isDefined){
           if(m.kC!=KeyCode.Space){
-            println("lalallal")
             lookList :+=(50,m.id.get,m.kC)
             showLook = true
           }
@@ -234,6 +236,7 @@ class GameHolder {
 
       case Protocol.PlayerJoin(id, player) =>
         println(s"${player.id}  加入游戏 ${grid.frameCount} MYID:${grid.myId} ")
+        gameState = GameState.play
 
 
       case Protocol.PlayerLeft(id) =>
@@ -256,10 +259,10 @@ class GameHolder {
         ballDirection = true
 
       /******/
-      case Protocol.GameOver(winner) =>
+      case Protocol.GameOver(winners) =>
         gameState = GameState.dead
-        drawInfoView.drawWhenDead(grid.myId, winner)
-        grid.clearAllData
+        winner = winners
+
 
 
       case Protocol.PlayerCrash(player) =>

@@ -117,7 +117,7 @@ case class DrawGame(
         }
         ctx.restore()
         val lookList1= if(showTime > 1) (showTime - 1,identity,look)::lookList.tail else lookList.tail
-        if(lookList.isEmpty) (lookList1,false) else (lookList1,showLook)
+        if(lookList1.isEmpty) (lookList1,false) else (lookList1,showLook)
       }else{
         (lookList,showLook)
       }
@@ -151,7 +151,6 @@ case class DrawGame(
     ctx.fillRect(0,0,bounds.x,bounds.y)
     ctx.font = "25px Helvetica"
     ctx.fillStyle = "#ffffff"
-
     if(winner==""){
       val text = "Game Over!  Press Space to start"
       val textLength = ctx.measureText(text).width
